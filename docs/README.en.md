@@ -1,10 +1,10 @@
-# WorkDSH documentation
+# 三云Buddy documentation
 
 [中文](README.md)
 
-Start with the [user guide](user-guide.en.md) for installation and use. The [FAQ](faq.en.md) covers platforms, runtime, and update boundaries. [Why WorkDSH](why-desktop.en.md) explains the product's purpose.
+Start with the [user guide](user-guide.en.md) for installation and use. The [FAQ](faq.en.md) covers platforms, runtime, and update boundaries. [Why 三云Buddy](why-desktop.en.md) explains the product's purpose.
 
-Developers can read the [architecture](architecture.en.md), [Desktop ownership boundaries](desktop-boundaries.md), [plugin development](plugin-development.en.md), and [package build guide](../apps/desktop/README.md). Official runtime dependencies use fixed published versions and checksum-locked Desktop releases. WorkDSH feature packages are composed by the runtime Profile.
+Developers can read the [architecture](architecture.en.md), [Desktop ownership boundaries](desktop-boundaries.md), [plugin development](plugin-development.en.md), and [package build guide](../apps/desktop/README.md). Official runtime dependencies use fixed published versions and checksum-locked Desktop releases. 三云Buddy feature packages are composed by the runtime Profile.
 
 The [plugin ecosystem manifesto](plugin-ecosystem.en.md) describes the longer-term direction; there is currently no separate community standard or online market runtime package.
 

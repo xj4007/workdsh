@@ -89,7 +89,7 @@ export function apply(ctx: Context): void {
   };
   // Opening a task is official Session navigation: the Session becomes current and the
   // layout returns to the built-in conversation view, whose shell owns message history,
-  // streaming, composer, model and permissions. WorkDSH keeps no second conversation
+  // streaming, composer, model and permissions. 三云Buddy keeps no second conversation
   // renderer or send path for project tasks.
   // A reload-restored snapshot can mount before the session list pull lands; retry briefly instead of failing loud.
   const openTask = (sessionId: string, onFailed?: () => void): void => {

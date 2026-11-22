@@ -91,7 +91,7 @@ export function verifyWindowsInstaller(
   const distDir = join(options.desktopRoot, 'dist')
   const installerPath = join(
     distDir,
-    `WorkDSH-${options.version}-x64-Setup.exe`,
+    `SanyunBuddy-${options.version}-x64-Setup.exe`,
   )
   const applicationPath = join(distDir, 'win-unpacked', 'WorkDSH.exe')
 

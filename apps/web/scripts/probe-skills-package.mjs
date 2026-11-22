@@ -27,7 +27,7 @@ const fixture = 'standalone-skill';
 const skillFile = join(home, 'agents/skills', fixture, 'SKILL.md');
 await mkdir(dirname(skillFile), { recursive: true });
 await writeFile(skillFile, `---\nname: ${fixture}\ndescription: Standalone package fixture\n---\nORIGINAL\n`);
-// WorkDSH-owned local catalog: metadata plus inert payload, installed through
+// 三云Buddy-owned local catalog: metadata plus inert payload, installed through
 // the same managed import path the browser upload uses.
 const catalogSkill = 'catalog-fixture';
 const catalogRoot = join(home, 'selected-catalog');
@@ -201,7 +201,7 @@ try {
   await expect(page.getByRole('heading', { name: '技能市场', exact: true })).toBeVisible();
   await expect(installedEntry).toBeFocused();
   pass('Installed skills open a dedicated page with back link, count heading, in-page search and shared batch management');
-  // Bundled skills keep the WorkDSH prefix so the unprefixed `skill-creator`
+  // Bundled skills keep the 三云Buddy prefix so the unprefixed `skill-creator`
   // name stays available to the user's own skills; each registers exactly once.
   const bundledSkills = (await api(host, 'list')).value;
   for (const name of ['workdsh-skill-creator', 'workdsh-ppt-design', 'workdsh-word-design', 'workdsh-excel-design', 'workdsh-web-design']) {

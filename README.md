@@ -1,5 +1,5 @@
-<p align="center"><img src="apps/web/assets/brand/workdsh-logo.svg" width="88" alt="WorkDSH logo"></p>
-<h1 align="center">WorkDSH</h1>
+<p align="center"><img src="apps/web/assets/brand/workdsh-logo.svg" width="88" alt="三云Buddy logo"></p>
+<h1 align="center">三云Buddy</h1>
 <p align="center"><strong>A WorkBuddy-style workspace where skills, experts, and plugins shape new workflows.</strong></p>
 <p align="center">Inspired by WorkBuddy’s workflow and built on DeepSeek Harness plugins: start with personal use, then install Enterprise Connection for company models, collaboration, and colleague mentions.</p>
 <p align="center"><a href="#download-desktop">Download Desktop</a> · <a href="#from-material-to-deliverable">Explore the workflow</a> · <a href="#personal-and-enterprise-use">Personal and enterprise</a> · <a href="docs/user-guide.en.md">User guide</a> · <a href="README.zh-CN.md">简体中文</a></p>
@@ -12,7 +12,7 @@
 
 [![DSH Friends: add a public chat room to DSH](docs/images/dsh-friends/hero.png)](https://github.com/techflag/dsh-friends)
 
-**[DSH Friends](https://github.com/techflag/dsh-friends) adds public rooms directly to DSH and compatible WorkDSH hosts.** Read recent room messages, join a conversation without adding contacts first, quote a message, and move to encrypted private chat only when both people want to continue.
+**[DSH Friends](https://github.com/techflag/dsh-friends) adds public rooms directly to DSH and compatible 三云Buddy hosts.** Read recent room messages, join a conversation without adding contacts first, quote a message, and move to encrypted private chat only when both people want to continue.
 
 Install it in **Plugins → Add plugin** from the official npm registry with `dsh-friends@0.1.0-alpha.11`, enable it, and fully restart Desktop. macOS and Windows use the same package. [Source and guide](https://github.com/techflag/dsh-friends) · [Download the universal `.tgz`](https://github.com/techflag/dsh-friends/releases/tag/v0.1.0-alpha.11) · [Public relay status](https://relay.techflag.cn/)
 
@@ -29,7 +29,7 @@ Install it in **Plugins → Add plugin** from the official npm registry with `ds
 
 Describe what you need, confirm the scope, and let the native AI build a workbench you can keep using. This travel example manages multiple trips, each with its own itinerary, budget and checklist.
 
-[![Watch the WorkDSH personal AI service demo](assets/promotion/workdsh-personal-ai-service-cover.png)](assets/promotion/workdsh-personal-ai-service-landscape.mp4)
+[![Watch the 三云Buddy personal AI service demo](assets/promotion/workdsh-personal-ai-service-cover.png)](assets/promotion/workdsh-personal-ai-service-landscape.mp4)
 
 **[▶ Watch the full-system demo · 102 seconds · Chinese narration and subtitles](assets/promotion/workdsh-personal-ai-service-landscape.mp4)**
 
@@ -37,7 +37,7 @@ Describe what you need, confirm the scope, and let the native AI build a workben
 
 ## Feature requests and bug reports
 
-**Help shape WorkDSH: tell us what you need, what feels awkward, or what is broken. No coding experience is required.**
+**Help shape 三云Buddy: tell us what you need, what feels awkward, or what is broken. No coding experience is required.**
 
 | Feedback | Where to submit | What helps |
 | --- | --- | --- |
@@ -47,26 +47,26 @@ Describe what you need, confirm the scope, and let the native AI build a workben
 
 A GitHub account is required to submit. Unsure which category fits? [Start here](https://github.com/techflag/workdsh/issues/new/choose). For backend account, permission or model-forwarding issues, report to [WorkDSH Admin](https://github.com/techflag/workdsh-admin/issues). **Issues are public: do not upload passwords, tokens, API keys or confidential company material.**
 
-**A personal workspace with installable enterprise capabilities is a defining WorkDSH feature.** Projects, the library, experts, skills, and connectors share the same implementation. Install Enterprise Connection and sign in to share text and files with `@` colleagues and use Collaboration; add company models through model settings. Independent business plugins can also reuse member authentication through `workdshEnterprise` to call company business APIs.
+**A personal workspace with installable enterprise capabilities is a defining 三云Buddy feature.** Projects, the library, experts, skills, and connectors share the same implementation. Install Enterprise Connection and sign in to share text and files with `@` colleagues and use Collaboration; add company models through model settings. Independent business plugins can also reuse member authentication through `workdshEnterprise` to call company business APIs.
 
 The enterprise plugin is **not listed in a plugin marketplace**. [Download Enterprise Connection](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/workdsh-enterprise-connection-0.1.0-alpha.2.tgz), enter the downloaded file’s full path in “Plugins → Add plugin”, install and activate it, then connect through “Settings → Enterprise account”. [Installation and login](#enterprise-connection-download-install-and-sign-in) · [Business plugin authentication](#enterprise-authentication-that-independent-plugins-can-reuse) · [Separate admin backend](https://github.com/techflag/workdsh-admin)
 
-![WorkDSH projects home with project templates and the complete desktop sidebar](apps/web/assets/screenshots/workdsh-projects-alpha8-dark.png)
+![三云Buddy projects home with project templates and the complete desktop sidebar](apps/web/assets/screenshots/workdsh-projects-alpha8-dark.png)
 
-<sub>Captured from a local WorkDSH session. Project names and account figures are demonstration data, not bundled with the installer.</sub>
+<sub>Captured from a local 三云Buddy session. Project names and account figures are demonstration data, not bundled with the installer.</sub>
 
 ## A WorkBuddy-style experience, an open DSH ecosystem
 
-WorkDSH draws on WorkBuddy's way of organizing projects, material, experts, skills, and connectors, and implements those pages and management features on DeepSeek Harness. DSH is a complete agent application in its own right; it composes models, tools, skill support, and UI through plugins. WorkDSH adds its workspace features through the same mechanism.
+三云Buddy draws on WorkBuddy's way of organizing projects, material, experts, skills, and connectors, and implements those pages and management features on DeepSeek Harness. DSH is a complete agent application in its own right; it composes models, tools, skill support, and UI through plugins. 三云Buddy adds its workspace features through the same mechanism.
 
-| What you need to do | Where WorkDSH helps |
+| What you need to do | Where 三云Buddy helps |
 | --- | --- |
 | Keep working toward a long-term goal | **Projects** bring instructions, plans, tasks, material, and capability settings together. |
 | Give AI the files you already have | The **library** manages local files, search, and previews; tasks can reference material and its revision. |
 | Reuse a team's working methods | **Experts** save role and capability settings; **skills** carry callable instructions and resources. |
 | Keep the result beyond the chat | The **deliverable workspace** previews or edits supported working copies of documents, spreadsheets, presentations, HTML, and PDF. |
 
-### What WorkDSH adds
+### What 三云Buddy adds
 
 - **Desktop execution, central administration**: the Agent and tools run on the employee’s computer; the server handles accounts, authorization, collaboration data and model forwarding.
 - **The full official UI with shared feature plugins**: personal and enterprise modes reuse the same library, experts, skills, and connectors.
@@ -114,12 +114,12 @@ File in library ──reference──> Project task ──choose──> Expert /
                                             └──> Inspect the process and result; keep editing in supported editors
 ```
 
-This path is WorkDSH's product direction. End-to-end validation of project document references, expert execution, and different Office formats is ongoing during Alpha. Preview, editing, and export fidelity differ by format; the [current capabilities and limits](apps/web/README.md) describe them in more detail.
+This path is 三云Buddy's product direction. End-to-end validation of project document references, expert execution, and different Office formats is ongoing during Alpha. Preview, editing, and export fidelity differ by format; the [current capabilities and limits](apps/web/README.md) describe them in more detail.
 
 <details>
 <summary>See an HTML deliverable from a real local conversation</summary>
 
-![WorkDSH conversation, deliverable cards, and right-side HTML preview](apps/web/assets/screenshots/workdsh-html-dashboard-preview.png)
+![三云Buddy conversation, deliverable cards, and right-side HTML preview](apps/web/assets/screenshots/workdsh-html-dashboard-preview.png)
 
 <sub>A local task example showing deliverable cards and right-side preview; it does not imply lossless editing for every file.</sub>
 
@@ -127,29 +127,29 @@ This path is WorkDSH's product direction. End-to-end validation of project docum
 
 ## Skills and plugins
 
-It helps to distinguish **the content people use** from **the software extension that manages it**. A skill usually consists of instructions and resources containing `SKILL.md`; it can be installed directly into the local DSH Skills directory and is not necessarily a plugin. WorkDSH's skill manager is a DSH plugin. An expert configuration is not itself a plugin either; a WorkDSH plugin manages experts. Other DSH plugins can add tools or UI features directly. The plugin system can therefore support skills, experts, and software functions without making every skill or expert a separate plugin.
+It helps to distinguish **the content people use** from **the software extension that manages it**. A skill usually consists of instructions and resources containing `SKILL.md`; it can be installed directly into the local DSH Skills directory and is not necessarily a plugin. 三云Buddy's skill manager is a DSH plugin. An expert configuration is not itself a plugin either; a 三云Buddy plugin manages experts. Other DSH plugins can add tools or UI features directly. The plugin system can therefore support skills, experts, and software functions without making every skill or expert a separate plugin.
 
 DSH plugins can be individual tools or combine UI, services, and other resources into a larger application scenario. For example, a data-management plugin could add data views and processing tools, then work with skills and experts across a workflow. This illustrates what the plugin model can support; it does not mean this release bundles such a data-management system. Users can discover and install skills through SkillHub and find DSH community plugins through dsh-market. Before installing a plugin, check what it provides and whether it supports the current DSH version.
 
 ### Meet other DSH users with DSH Friends
 
-[DSH Friends](https://github.com/techflag/dsh-friends) is an independently installed community chat plugin for DeepSeek Harness and compatible WorkDSH hosts. It adds public rooms, quoted replies, encrypted private chat, recent public-message history, room presence and new-message reminders. Open a room first, talk about what you are building, and start a private conversation only when both people want to continue.
+[DSH Friends](https://github.com/techflag/dsh-friends) is an independently installed community chat plugin for DeepSeek Harness and compatible 三云Buddy hosts. It adds public rooms, quoted replies, encrypted private chat, recent public-message history, room presence and new-message reminders. Open a room first, talk about what you are building, and start a private conversation only when both people want to continue.
 
-In **Plugins → Add plugin**, select the official npm registry and install `dsh-friends@0.1.0-alpha.11`, then enable it and fully restart Desktop. The same package works on macOS and Windows. Source, privacy notes and current limitations are in the [project repository](https://github.com/techflag/dsh-friends); a universal `.tgz` is also available from [GitHub Releases](https://github.com/techflag/dsh-friends/releases). DSH Friends is not bundled with WorkDSH and should be reviewed before installation like any other community plugin.
+In **Plugins → Add plugin**, select the official npm registry and install `dsh-friends@0.1.0-alpha.11`, then enable it and fully restart Desktop. The same package works on macOS and Windows. Source, privacy notes and current limitations are in the [project repository](https://github.com/techflag/dsh-friends); a universal `.tgz` is also available from [GitHub Releases](https://github.com/techflag/dsh-friends/releases). DSH Friends is not bundled with 三云Buddy and should be reviewed before installation like any other community plugin.
 
-WorkDSH connects two independently maintained catalogs: [SkillHub](https://skillhub.cn/) for Skills and [dsh-market](https://dshmarket.com/zh/) for DSH plugins. SkillHub entries show their source and version, and open the source page for license information before installation. The DSH catalog is provided by the third-party dsh-market plugin inside the existing plugin page. Catalog entries are **not all preinstalled, reviewed, or endorsed by WorkDSH**; check each item's license, dependencies, and DSH compatibility. [Skill management](packages/plugins/skills/README.md) · [Plugin development](docs/plugin-development.en.md) · [Ecosystem manifesto](docs/plugin-ecosystem.en.md)
+三云Buddy connects two independently maintained catalogs: [SkillHub](https://skillhub.cn/) for Skills and [dsh-market](https://dshmarket.com/zh/) for DSH plugins. SkillHub entries show their source and version, and open the source page for license information before installation. The DSH catalog is provided by the third-party dsh-market plugin inside the existing plugin page. Catalog entries are **not all preinstalled, reviewed, or endorsed by 三云Buddy**; check each item's license, dependencies, and DSH compatibility. [Skill management](packages/plugins/skills/README.md) · [Plugin development](docs/plugin-development.en.md) · [Ecosystem manifesto](docs/plugin-ecosystem.en.md)
 
-![SkillHub catalog inside WorkDSH, showing skill icons, versions, sources, and install actions](apps/web/assets/screenshots/workdsh-skillhub-2026-09.png)
+![SkillHub catalog inside 三云Buddy, showing skill icons, versions, sources, and install actions](apps/web/assets/screenshots/workdsh-skillhub-2026-09.png)
 
 <sub>Live SkillHub results; catalog size and entries change over time. The local session shown is a demonstration environment.</sub>
 
-![DSH community plugin catalog opened from WorkDSH's existing plugin page](apps/web/assets/screenshots/workdsh-dshmarket-2026-09.png)
+![DSH community plugin catalog opened from 三云Buddy's existing plugin page](apps/web/assets/screenshots/workdsh-dshmarket-2026-09.png)
 
-<sub>The third-party dsh-market plugin supplies discovery and installation. The screenshot does not imply that catalog plugins are bundled with WorkDSH.</sub>
+<sub>The third-party dsh-market plugin supplies discovery and installation. The screenshot does not imply that catalog plugins are bundled with 三云Buddy.</sub>
 
 ## Personal and enterprise use
 
-WorkDSH supports personal use and Enterprise Desktop. Personal and enterprise modes use the complete official DSH interface and the same WorkDSH feature packages. [WorkDSH Admin](https://github.com/techflag/workdsh-admin) manages company accounts, organizations, permissions and internal model APIs.
+三云Buddy supports personal use and Enterprise Desktop. Personal and enterprise modes use the complete official DSH interface and the same 三云Buddy feature packages. [WorkDSH Admin](https://github.com/techflag/workdsh-admin) manages company accounts, organizations, permissions and internal model APIs.
 
 | Mode | Where the Agent and tools run | How to enter |
 | --- | --- | --- |
@@ -160,7 +160,7 @@ Desktop keeps personal and enterprise data and credentials in separate spaces. I
 
 ### Enterprise management backend (separate repository)
 
-The enterprise backend is developed and deployed independently in **[techflag/workdsh-admin](https://github.com/techflag/workdsh-admin)**. This repository provides the WorkDSH client and plugins. The backend provides company accounts, organization permissions, collaboration data, member-authorized conversation auditing and internal model API forwarding.
+The enterprise backend is developed and deployed independently in **[techflag/workdsh-admin](https://github.com/techflag/workdsh-admin)**. This repository provides the 三云Buddy client and plugins. The backend provides company accounts, organization permissions, collaboration data, member-authorized conversation auditing and internal model API forwarding.
 
 Administrators should follow the [workdsh-admin deployment and usage guide](https://github.com/techflag/workdsh-admin#readme), then provide members with the backend address and company accounts. Members install this repository's desktop app and Enterprise Connection plugin and connect to that address; the Agent and tools continue to run on their computer.
 
@@ -262,13 +262,13 @@ WorkDSH Admin — organization overview:
 
 ## Download Desktop
 
-Desktop **3.0.0-alpha.4** is published as the Latest release (Alpha version). The [GitHub Release](https://github.com/techflag/workdsh/releases/tag/desktop-v3.0.0-alpha.4) provides these complete installers:
+Desktop **3.0.0-alpha.4** was published before the rename, so these installers still display `WorkDSH`. The [GitHub Release](https://github.com/techflag/workdsh/releases/tag/desktop-v3.0.0-alpha.4) provides these complete installers:
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 | [WorkDSH Setup.exe](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-windows-x64--WorkDSH-3.0.0-alpha.4-x64-Setup.exe) |
-| macOS Apple Silicon | [WorkDSH arm64.dmg](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-macos-arm64--WorkDSH-3.0.0-alpha.4-arm64.dmg) |
-| macOS Intel | [WorkDSH x64.dmg](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-macos-x64--WorkDSH-3.0.0-alpha.4-x64.dmg) |
+| Windows x64 | [三云Buddy Setup.exe](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-windows-x64--WorkDSH-3.0.0-alpha.4-x64-Setup.exe) |
+| macOS Apple Silicon | [三云Buddy arm64.dmg](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-macos-arm64--WorkDSH-3.0.0-alpha.4-arm64.dmg) |
+| macOS Intel | [三云Buddy x64.dmg](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-macos-x64--WorkDSH-3.0.0-alpha.4-x64.dmg) |
 
 **Downloads in China (older mirror)**: the [Gitee 2.0.6-alpha.3 release](https://gitee.com/techflag/workdsh/releases/tag/desktop-v2.0.6-alpha.3) provides split archives for Windows x64 and macOS Apple Silicon. The current repository allows 100 MB per attachment and 1 GB total; download every part for your platform and its merge script, then follow the release instructions. The script verifies SHA256 before producing the installer. For Intel Mac or a complete single-file installer, use the GitHub links above. Enterprise plugin TGZ/ZIP files are also available directly on the Gitee release page.
 
@@ -286,7 +286,7 @@ Host plugins inject `workdshEnterprise` and call `request({ plugin: "reports", o
 
 ## Development and documentation
 
-Source ownership: [WorkDSH feature packages and Web](apps/web/README.md) · [Desktop carrier](apps/desktop/README.md) · [Architecture](docs/architecture.en.md) · [All documentation](docs/README.en.md). Running from source requires Node.js 22.19+ or 24+, Corepack, and Yarn 4.18.0:
+Source ownership: [三云Buddy feature packages and Web](apps/web/README.md) · [Desktop carrier](apps/desktop/README.md) · [Architecture](docs/architecture.en.md) · [All documentation](docs/README.en.md). Running from source requires Node.js 22.19+ or 24+, Corepack, and Yarn 4.18.0:
 
 ```sh
 corepack yarn install --immutable
@@ -325,8 +325,8 @@ Set `WORKDSH_DEPLOYMENT_CONFIG` to this file. Packaging writes it to `workdsh-co
 
 Thanks to the maintainers and contributors of [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness), the foundation of our runtime and plugin system; [Tencent SkillHub](https://github.com/Tencent/skillhub), whose public catalog API powers skill discovery; [@cocofhu/skillhub](https://github.com/cocofhu/skillhub), the bundled DSH SkillHub plugin; and [dsh-market](https://github.com/dsh-market/dsh-market) with the [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) catalog, which power community plugin discovery. WorkBuddy inspired the workspace design. The bundled skill-creator adaptation retains its [Apache-2.0 notice](packages/plugins/skills/resources/skills/workdsh-skill-creator/NOTICE.md). Feedback and contributions: [GitHub Issues](https://github.com/techflag/workdsh/issues) · [Contributing](CONTRIBUTING.en.md)
 
-WorkDSH uses the [MIT License](LICENSE). It is an independent community project and is not affiliated with, partnered with, authorized by, or endorsed by DeepSeek or WorkBuddy. Those names appear only to describe technical origins, compatibility, and design references. Upstream contributors shown on GitHub are inherited from synchronized commit history; this does not imply that they maintain this repository.
+三云Buddy uses the [MIT License](LICENSE). It is an independent community project and is not affiliated with, partnered with, authorized by, or endorsed by DeepSeek or WorkBuddy. Those names appear only to describe technical origins, compatibility, and design references. Upstream contributors shown on GitHub are inherited from synchronized commit history; this does not imply that they maintain this repository.
 
 ## Star history
 
-[![WorkDSH star history](https://api.star-history.com/chart?repos=techflag/workdsh&type=date)](https://www.star-history.com/?repos=techflag%2Fworkdsh&type=date)
+[![三云Buddy star history](https://api.star-history.com/chart?repos=techflag/workdsh&type=date)](https://www.star-history.com/?repos=techflag%2Fworkdsh&type=date)

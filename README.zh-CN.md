@@ -1,5 +1,5 @@
-<p align="center"><img src="apps/web/assets/brand/workdsh-logo.svg" width="88" alt="WorkDSH 标志"></p>
-<h1 align="center">WorkDSH</h1>
+<p align="center"><img src="apps/web/assets/brand/workdsh-logo.svg" width="88" alt="三云Buddy 标志"></p>
+<h1 align="center">三云Buddy</h1>
 <p align="center"><strong>WorkBuddy 式工作台，让技能、专家与插件组成更多工作场景。</strong></p>
 <p align="center">参考 WorkBuddy 的工作体验，基于 DeepSeek Harness 的开放插件体系：个人开箱使用，安装企业连接插件后接入公司模型、协作与 @同事。</p>
 <p align="center"><a href="#下载桌面版">下载桌面版</a> · <a href="#从资料到成果">了解工作流</a> · <a href="#个人与企业使用">个人与企业</a> · <a href="docs/user-guide.md">使用指南</a> · <a href="README.md">English</a></p>
@@ -12,7 +12,7 @@
 
 [![DSH 搭子：给 DSH 装个聊天室](docs/images/dsh-friends/hero.png)](https://github.com/techflag/dsh-friends)
 
-**[DSH 搭子](https://github.com/techflag/dsh-friends) 把公共聊天室直接放进 DSH，也可用于兼容的 WorkDSH 宿主。** 不用先加好友，进入房间就能回看近期消息、接着聊；遇到感兴趣的话可以引用回复，聊得来再由双方进入加密私聊。
+**[DSH 搭子](https://github.com/techflag/dsh-friends) 把公共聊天室直接放进 DSH，也可用于兼容的 三云Buddy 宿主。** 不用先加好友，进入房间就能回看近期消息、接着聊；遇到感兴趣的话可以引用回复，聊得来再由双方进入加密私聊。
 
 在“插件 → 添加插件”中选择 npm 官方源，安装 `dsh-friends@0.1.0-alpha.11`，启用后完整退出并重新打开 Desktop。macOS 和 Windows 使用同一个安装包。[项目与使用说明](https://github.com/techflag/dsh-friends) · [下载通用 `.tgz`](https://github.com/techflag/dsh-friends/releases/tag/v0.1.0-alpha.11) · [公共中继状态](https://relay.techflag.cn/)
 
@@ -29,7 +29,7 @@
 
 说出需求、确认范围，让原生 AI 制作可持续使用的工作台。以旅行管理为例：用户可以自己新增多次旅行，每次独立管理行程、预算和出行待办。
 
-[![观看 WorkDSH 定制个人 AI 服务演示](assets/promotion/workdsh-personal-ai-service-cover.png)](assets/promotion/workdsh-personal-ai-service-landscape.mp4)
+[![观看 三云Buddy 定制个人 AI 服务演示](assets/promotion/workdsh-personal-ai-service-cover.png)](assets/promotion/workdsh-personal-ai-service-landscape.mp4)
 
 **[▶ 观看全系统演示 · 102 秒 · 中文配音与字幕](assets/promotion/workdsh-personal-ai-service-landscape.mp4)**
 
@@ -37,7 +37,7 @@
 
 ## 功能建议与 Bug 反馈
 
-**WorkDSH 正在持续改进，欢迎告诉我们：你想要什么功能、哪里不好用、遇到了什么 Bug。无需懂代码。**
+**三云Buddy 正在持续改进，欢迎告诉我们：你想要什么功能、哪里不好用、遇到了什么 Bug。无需懂代码。**
 
 | 我要反馈 | 点击这里 | 建议提供 |
 | --- | --- | --- |
@@ -47,26 +47,26 @@
 
 GitHub 提交需要登录账号。暂时不知道属于哪类？[从反馈入口开始](https://github.com/techflag/workdsh/issues/new/choose)。公司账号、权限或模型转发的后台问题，请到 [WorkDSH Admin 提交](https://github.com/techflag/workdsh-admin/issues)。**Issue 是公开的，请勿上传密码、Token、API Key 或公司敏感资料。**
 
-**个人工作台 + 可安装的企业能力，是 WorkDSH 的特色。** 资料库、项目、专家、技能和连接器共用同一套功能；企业连接插件按需安装，登录公司账号后使用协作、@同事分享正文与文件，并可在模型设置中添加公司模型。独立业务插件还能通过 `workdshEnterprise` 复用成员认证，连接自己的公司业务接口。
+**个人工作台 + 可安装的企业能力，是 三云Buddy 的特色。** 资料库、项目、专家、技能和连接器共用同一套功能；企业连接插件按需安装，登录公司账号后使用协作、@同事分享正文与文件，并可在模型设置中添加公司模型。独立业务插件还能通过 `workdshEnterprise` 复用成员认证，连接自己的公司业务接口。
 
 企业插件目前**未上架插件市场**：[下载企业连接包](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/workdsh-enterprise-connection-0.1.0-alpha.2.tgz)，在“插件 → 添加插件”填写下载文件的完整路径，安装并启用，再到“设置 → 企业账号”连接公司后台。[安装与登录步骤](#企业连接插件下载安装与登录) · [业务插件认证调用](#企业插件开放认证服务业务插件不用重复登录) · [独立管理后台](https://github.com/techflag/workdsh-admin)
 
-![WorkDSH 项目主页：项目、模板与完整桌面侧栏](apps/web/assets/screenshots/workdsh-projects-alpha8-dark.png)
+![三云Buddy 项目主页：项目、模板与完整桌面侧栏](apps/web/assets/screenshots/workdsh-projects-alpha8-dark.png)
 
-<sub>WorkDSH 本地运行截图。项目名称和账户数值为演示环境数据，不随安装包提供。</sub>
+<sub>三云Buddy 本地运行截图。项目名称和账户数值为演示环境数据，不随安装包提供。</sub>
 
 ## WorkBuddy 式体验，DSH 开放生态
 
-WorkDSH 参考 WorkBuddy 按项目组织资料、专家、技能和连接器的工作方式，并在 DeepSeek Harness 上实现这些页面和管理功能。DSH 本身也是完整的 Agent 软件；它通过插件组合模型、工具、技能支持、界面等功能，WorkDSH 则在这套机制上加入自己的工作台功能。
+三云Buddy 参考 WorkBuddy 按项目组织资料、专家、技能和连接器的工作方式，并在 DeepSeek Harness 上实现这些页面和管理功能。DSH 本身也是完整的 Agent 软件；它通过插件组合模型、工具、技能支持、界面等功能，三云Buddy 则在这套机制上加入自己的工作台功能。
 
-| 你要完成的事 | WorkDSH 提供的入口 |
+| 你要完成的事 | 三云Buddy 提供的入口 |
 | --- | --- |
 | 围绕长期目标持续工作 | **项目**集中管理指令、计划、任务、资料和能力配置。 |
 | 让 AI 用上已有文件 | **资料库**管理本地文件、搜索和预览，任务可引用资料及其修订。 |
 | 复用团队擅长的方法 | **专家**保存角色与能力配置；**技能**承载可调用的说明和资源。 |
 | 把结果带出对话 | **成果工作区**预览或编辑支持的文档、表格、演示文稿、HTML 和 PDF 工作副本。 |
 
-### WorkDSH 的特色
+### 三云Buddy 的特色
 
 - **本机执行，集中管理**：Agent 和工具在员工桌面客户端运行；服务器负责账号、权限、协作数据与模型转发。
 - **完整官方界面，共享功能插件**：个人和企业复用同一套资料库、专家、技能和连接器功能。
@@ -114,12 +114,12 @@ export default {
                                       └──> 查看过程与成果，在支持的编辑器中继续修改
 ```
 
-这条路径是 WorkDSH 的产品方向。项目内资料引用、专家执行与不同 Office 格式的完整端到端体验仍在 Alpha 验收中；各格式的预览、编辑和导出范围不同，[当前能力与限制](apps/web/README.zh-CN.md)有更具体的说明。
+这条路径是 三云Buddy 的产品方向。项目内资料引用、专家执行与不同 Office 格式的完整端到端体验仍在 Alpha 验收中；各格式的预览、编辑和导出范围不同，[当前能力与限制](apps/web/README.zh-CN.md)有更具体的说明。
 
 <details>
 <summary>查看实际会话中的 HTML 成果示例</summary>
 
-![WorkDSH 会话、成果卡片和右侧 HTML 预览](apps/web/assets/screenshots/workdsh-html-dashboard-preview.png)
+![三云Buddy 会话、成果卡片和右侧 HTML 预览](apps/web/assets/screenshots/workdsh-html-dashboard-preview.png)
 
 <sub>本地任务示例；展示成果卡片和右侧预览，不代表任意文件都能无损编辑。</sub>
 
@@ -127,29 +127,29 @@ export default {
 
 ## 技能与插件生态
 
-这里要区分**用户使用的内容**和**实现它的软件扩展**：一个技能通常是包含 `SKILL.md` 的说明与资源，可以直接安装到本机 DSH 技能目录，它本身不一定是插件；WorkDSH 的技能管理器才是 DSH 插件。专家配置也不等于插件，管理专家的功能由 WorkDSH 插件实现。DSH 插件还可以直接增加工具或界面功能。因而插件体系能承载技能、专家及软件功能，但不能把每一个技能或专家都算成一个插件。
+这里要区分**用户使用的内容**和**实现它的软件扩展**：一个技能通常是包含 `SKILL.md` 的说明与资源，可以直接安装到本机 DSH 技能目录，它本身不一定是插件；三云Buddy 的技能管理器才是 DSH 插件。专家配置也不等于插件，管理专家的功能由 三云Buddy 插件实现。DSH 插件还可以直接增加工具或界面功能。因而插件体系能承载技能、专家及软件功能，但不能把每一个技能或专家都算成一个插件。
 
 DSH 插件可以是单项工具，也可以组合界面、服务与其他资源，形成更完整的应用场景。例如，数据管理插件可以提供数据页面和处理工具，再与技能、专家配合完成一套流程；这是插件体系允许的扩展方向，不表示当前版本已内置这样的数据管理系统。用户可以从 SkillHub 发现和安装技能，也可以通过 dsh-market 寻找 DSH 社区插件。安装前应看插件具体提供什么，以及是否兼容当前 DSH 版本。
 
 ### 用 DSH 搭子认识其他 DSH 用户
 
-[DSH 搭子](https://github.com/techflag/dsh-friends) 是面向 DeepSeek Harness 和兼容 WorkDSH 宿主的独立社区聊天插件。它提供公共房间、引用回复、加密私聊、近期公共消息回看、房间在线状态和新消息提醒。先进入房间聊聊正在做的事情，聊得来，再由双方决定是否继续私聊，不需要先加好友。
+[DSH 搭子](https://github.com/techflag/dsh-friends) 是面向 DeepSeek Harness 和兼容 三云Buddy 宿主的独立社区聊天插件。它提供公共房间、引用回复、加密私聊、近期公共消息回看、房间在线状态和新消息提醒。先进入房间聊聊正在做的事情，聊得来，再由双方决定是否继续私聊，不需要先加好友。
 
-在“插件 → 添加插件”中选择 npm 官方源，安装 `dsh-friends@0.1.0-alpha.11`，启用后完整退出并重新打开 Desktop。macOS 和 Windows 使用同一个安装包。源码、数据说明和当前限制见 [项目仓库](https://github.com/techflag/dsh-friends)，也可以从 [GitHub Releases](https://github.com/techflag/dsh-friends/releases) 下载通用 `.tgz`。DSH 搭子不随 WorkDSH 预装，和其他社区插件一样，安装前请自行核对来源与权限。
+在“插件 → 添加插件”中选择 npm 官方源，安装 `dsh-friends@0.1.0-alpha.11`，启用后完整退出并重新打开 Desktop。macOS 和 Windows 使用同一个安装包。源码、数据说明和当前限制见 [项目仓库](https://github.com/techflag/dsh-friends)，也可以从 [GitHub Releases](https://github.com/techflag/dsh-friends/releases) 下载通用 `.tgz`。DSH 搭子不随 三云Buddy 预装，和其他社区插件一样，安装前请自行核对来源与权限。
 
-WorkDSH 接入两个独立维护的目录：[SkillHub](https://skillhub.cn/) 提供 Skill，[dsh-market](https://dshmarket.com/zh/) 提供 DSH 插件。SkillHub 条目展示来源和版本，许可证信息可到来源页核对；现有插件页通过第三方 dsh-market 插件打开社区目录。目录中的内容**并非全部预装、经 WorkDSH 审核或获得 WorkDSH 背书**，安装前应查看许可证、依赖和 DSH 版本兼容性。[技能管理](packages/plugins/skills/README.md) · [插件开发](docs/plugin-development.md) · [生态倡议](docs/plugin-ecosystem.md)
+三云Buddy 接入两个独立维护的目录：[SkillHub](https://skillhub.cn/) 提供 Skill，[dsh-market](https://dshmarket.com/zh/) 提供 DSH 插件。SkillHub 条目展示来源和版本，许可证信息可到来源页核对；现有插件页通过第三方 dsh-market 插件打开社区目录。目录中的内容**并非全部预装、经 三云Buddy 审核或获得 三云Buddy 背书**，安装前应查看许可证、依赖和 DSH 版本兼容性。[技能管理](packages/plugins/skills/README.md) · [插件开发](docs/plugin-development.md) · [生态倡议](docs/plugin-ecosystem.md)
 
-![WorkDSH 中的 SkillHub 技能目录：图标、版本、来源与安装入口](apps/web/assets/screenshots/workdsh-skillhub-2026-09.png)
+![三云Buddy 中的 SkillHub 技能目录：图标、版本、来源与安装入口](apps/web/assets/screenshots/workdsh-skillhub-2026-09.png)
 
 <sub>SkillHub 实时目录，条目和数量会变化；截图所示本地会话为演示环境。</sub>
 
-![从 WorkDSH 现有插件页打开的 DSH 社区插件市场](apps/web/assets/screenshots/workdsh-dshmarket-2026-09.png)
+![从 三云Buddy 现有插件页打开的 DSH 社区插件市场](apps/web/assets/screenshots/workdsh-dshmarket-2026-09.png)
 
-<sub>社区插件的发现和安装由第三方 dsh-market 插件提供；截图不代表目录中的插件已随 WorkDSH 安装包提供。</sub>
+<sub>社区插件的发现和安装由第三方 dsh-market 插件提供；截图不代表目录中的插件已随 三云Buddy 安装包提供。</sub>
 
 ## 个人与企业使用
 
-WorkDSH 支持个人使用和企业 Desktop。个人与企业保留完整官方 DSH 界面，复用同一套 WorkDSH 功能插件；企业通过 [WorkDSH Admin](https://github.com/techflag/workdsh-admin) 管理公司账号、组织、权限和内部模型 API。
+三云Buddy 支持个人使用和企业 Desktop。个人与企业保留完整官方 DSH 界面，复用同一套 三云Buddy 功能插件；企业通过 [WorkDSH Admin](https://github.com/techflag/workdsh-admin) 管理公司账号、组织、权限和内部模型 API。
 
 | 使用方式 | Agent 与工具在哪里执行 | 如何进入 |
 | --- | --- | --- |
@@ -160,7 +160,7 @@ Desktop 的个人与企业空间分别保存数据和凭据。企业账号插件
 
 ### 企业管理后台（独立仓库）
 
-企业云端管理后台在 **[techflag/workdsh-admin](https://github.com/techflag/workdsh-admin)** 独立开发和部署。本仓库提供 WorkDSH 客户端与插件；公司账号、组织权限、协作数据、成员授权的会话审计及内部模型 API 转发由管理后台提供。
+企业云端管理后台在 **[techflag/workdsh-admin](https://github.com/techflag/workdsh-admin)** 独立开发和部署。本仓库提供 三云Buddy 客户端与插件；公司账号、组织权限、协作数据、成员授权的会话审计及内部模型 API 转发由管理后台提供。
 
 管理员请按 [workdsh-admin 的部署与使用说明](https://github.com/techflag/workdsh-admin#readme) 部署后台，并向成员提供后台地址和公司账号。成员安装本仓库的桌面端与企业连接插件后连接该地址；Agent 与工具仍在成员本机执行。
 
@@ -270,13 +270,13 @@ WorkDSH Admin：组织概览。
 
 ## 下载桌面版
 
-桌面安装包 **3.0.0-alpha.4** 已发布，并设为 Latest（Alpha 版本）。[GitHub Release](https://github.com/techflag/workdsh/releases/tag/desktop-v3.0.0-alpha.4) 提供以下完整安装包：
+桌面版 **3.0.0-alpha.4** 在更名前发布，安装包仍显示 `WorkDSH`。[GitHub Release](https://github.com/techflag/workdsh/releases/tag/desktop-v3.0.0-alpha.4) 提供以下完整安装包：
 
 | 平台 | 下载 |
 | --- | --- |
-| Windows x64 | [WorkDSH Setup.exe](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-windows-x64--WorkDSH-3.0.0-alpha.4-x64-Setup.exe) |
-| macOS Apple Silicon | [WorkDSH arm64.dmg](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-macos-arm64--WorkDSH-3.0.0-alpha.4-arm64.dmg) |
-| macOS Intel | [WorkDSH x64.dmg](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-macos-x64--WorkDSH-3.0.0-alpha.4-x64.dmg) |
+| Windows x64 | [三云Buddy Setup.exe](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-windows-x64--WorkDSH-3.0.0-alpha.4-x64-Setup.exe) |
+| macOS Apple Silicon | [三云Buddy arm64.dmg](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-macos-arm64--WorkDSH-3.0.0-alpha.4-arm64.dmg) |
+| macOS Intel | [三云Buddy x64.dmg](https://github.com/techflag/workdsh/releases/download/desktop-v3.0.0-alpha.4/dsh-plugin-desktop-macos-x64--WorkDSH-3.0.0-alpha.4-x64.dmg) |
 
 **国内下载（旧版镜像）**：[Gitee 2.0.6-alpha.3 发行](https://gitee.com/techflag/workdsh/releases/tag/desktop-v2.0.6-alpha.3) 提供 Windows x64 和 macOS Apple Silicon 分卷。受当前仓库单附件 100 MB、附件总量 1 GB 限制，需下载对应平台的全部分卷及合并脚本，按发行页说明恢复安装包；脚本通过 SHA256 校验后才生成安装文件。Intel Mac 或希望下载单个完整安装包的用户，请使用上表 GitHub 链接。企业插件 TGZ/ZIP 也可从 Gitee 发行页直接下载。
 
@@ -294,7 +294,7 @@ Desktop 基础包不预装企业插件，安装企业插件后启用企业登录
 
 ## 开发与文档
 
-源码分工：[WorkDSH 功能包与 Web](apps/web/README.zh-CN.md) · [Desktop 外壳](apps/desktop/README.zh.md) · [架构](docs/architecture.md) · [全部文档](docs/README.md)。从源码运行需要 Node.js 22.19+ 或 24+、Corepack 和 Yarn 4.18.0：
+源码分工：[三云Buddy 功能包与 Web](apps/web/README.zh-CN.md) · [Desktop 外壳](apps/desktop/README.zh.md) · [架构](docs/architecture.md) · [全部文档](docs/README.md)。从源码运行需要 Node.js 22.19+ 或 24+、Corepack 和 Yarn 4.18.0：
 
 ```sh
 corepack yarn install --immutable
@@ -333,8 +333,8 @@ scripts/        产品构建与发布检查
 
 感谢 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 社区提供运行时与插件底座；[腾讯 SkillHub](https://github.com/Tencent/skillhub) 提供公开的技能目录 API；[@cocofhu/skillhub](https://github.com/cocofhu/skillhub) 提供随桌面版集成的 DSH SkillHub 插件；[dsh-market](https://github.com/dsh-market/dsh-market) 与 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 社区提供插件市场与目录。WorkBuddy 是工作台设计参考。内置 skill-creator 的改编保留了原 [Apache-2.0 来源说明](packages/plugins/skills/resources/skills/workdsh-skill-creator/NOTICE.md)。反馈与参与：[GitHub Issues](https://github.com/techflag/workdsh/issues) · [参与贡献](CONTRIBUTING.md)
 
-WorkDSH 采用 [MIT License](LICENSE)，是独立社区项目，与 DeepSeek 或 WorkBuddy 不存在隶属、合作、授权或背书关系。相关名称仅用于说明技术来源、兼容性与设计参考。GitHub Contributors 中的上游贡献者来自继承和同步的提交历史，不表示其参与本仓库维护。
+三云Buddy 采用 [MIT License](LICENSE)，是独立社区项目，与 DeepSeek 或 WorkBuddy 不存在隶属、合作、授权或背书关系。相关名称仅用于说明技术来源、兼容性与设计参考。GitHub Contributors 中的上游贡献者来自继承和同步的提交历史，不表示其参与本仓库维护。
 
 ## Star 趋势
 
-[![WorkDSH Star 趋势](https://api.star-history.com/chart?repos=techflag/workdsh&type=date)](https://www.star-history.com/?repos=techflag%2Fworkdsh&type=date)
+[![三云Buddy Star 趋势](https://api.star-history.com/chart?repos=techflag/workdsh&type=date)](https://www.star-history.com/?repos=techflag%2Fworkdsh&type=date)

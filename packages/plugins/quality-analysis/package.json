@@ -3,7 +3,7 @@
   "version": "3.0.0-alpha.57",
   "private": true,
   "type": "module",
-  "description": "WorkDSH quality-analysis business workbench; installation acceptance in progress.",
+  "description": "三云Buddy quality-analysis business workbench; installation acceptance in progress.",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

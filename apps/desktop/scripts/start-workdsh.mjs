@@ -12,7 +12,7 @@ const profile = join(runtime, 'profiles', 'workdsh')
 const primary = join(runtime, 'primary-runtime')
 const node = join(primary, 'dependencies', 'node', 'bin', process.platform === 'win32' ? 'node.exe' : 'node')
 for (const path of [join(root, 'lib', 'workdsh-main.js'), profile, node, primary]) {
-  if (!existsSync(path)) throw new Error(`WorkDSH development runtime is missing: ${path}. Run yarn dev first.`)
+  if (!existsSync(path)) throw new Error(`三云Buddy development runtime is missing: ${path}. Run yarn dev first.`)
 }
 
 const require = createRequire(import.meta.url)

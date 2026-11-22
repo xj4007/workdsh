@@ -1,4 +1,4 @@
-# Desktop and WorkDSH ownership
+# Desktop and 三云Buddy ownership
 
 Desktop is one Electron carrier around an unmodified DeepSeek Harness
 installation. That installation supplies the official Host, complete Web Client
@@ -27,10 +27,10 @@ MCP/connectors**. This does not preinstall every expert definition, skill or MCP
 server. The enterprise account plugin is additionally carried by the immutable
 runtime and selected only after enterprise login. Personal defaults and the
 personal plugin inventory do not enable it; employees do not install an account
-tgz. Projects, WorkDSH Office, activity, collaboration, notifications and other
+tgz. Projects, 三云Buddy Office, activity, collaboration, notifications and other
 business applications remain external plugins requiring explicit installation.
 Official runtime plugins and primary-runtime Office skills are separate
-infrastructure, not the WorkDSH Office feature package.
+infrastructure, not the 三云Buddy Office feature package.
 
 `apps/desktop/scripts/workdsh-package-boundary.mjs` owns the release
 inventory: four feature packages, the enterprise account package, and the
@@ -64,7 +64,7 @@ and employee steps.
 
 ## Runtime and writable Profiles
 
-Release preparation uses fresh archives from the unique WorkDSH source.
+Release preparation uses fresh archives from the unique 三云Buddy source.
 `pack-workdsh-profile.mjs` records package versions and hashes;
 `prepare-workdsh-runtime.mjs` verifies the DSH target, archive set, hashes and
 dependency closure. It does not copy a running Profile. Archives and lockfile
@@ -73,7 +73,7 @@ the pinned pnpm JavaScript CLI and the same bundled Node. The version gate check
 all installed official DSH instances, including transitive pnpm instances.
 
 Profile preparation boots the actual official plugin manager. Its personal
-default inventory contains exactly the four enabled WorkDSH feature bundles.
+default inventory contains exactly the four enabled 三云Buddy feature bundles.
 The Electron `afterPack` gate repeats this check with packaged resources and
 bundled Node, verifies archive and deployment configuration integrity, and
 rejects a second runtime tree. These checks do not substitute for real windows,
@@ -97,7 +97,7 @@ bearer. The enterprise plugin uses a restricted local interface for account,
 logout and visible-body synchronization. Supplier model keys stay on the server;
 users configure internal model API credentials through the official settings.
 
-Desktop owns entry, packaging, process and window lifecycle. WorkDSH packages
+Desktop owns entry, packaging, process and window lifecycle. 三云Buddy packages
 own shared business services and pages; enterprise adapters own member identity
 and synchronization. The backend owns server authorization and organization
 services. New features extend these boundaries instead of copying personal,

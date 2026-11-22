@@ -18,7 +18,8 @@ function result(
     readonly key: string
   }[],
   configuration: ElectronArtifactBuildResult['configuration'] = {
-    productName: 'WorkDSH',
+    productName: '三云Buddy',
+    win: { executableName: 'WorkDSH' },
   },
 ): ElectronArtifactBuildResult {
   return {
@@ -47,7 +48,7 @@ describe('final Electron fuse verification', () => {
   it('maps only requested platform and architecture keys to complete runtime contexts', () => {
     const expected = [
       join('/build', 'linux-unpacked', 'dsh-plugin-desktop'),
-      join('/build', 'mac-universal', 'WorkDSH.app', 'Contents', 'MacOS', 'WorkDSH'),
+      join('/build', 'mac-universal', '三云Buddy.app', 'Contents', 'MacOS', '三云Buddy'),
       join('/build', 'win-unpacked', 'WorkDSH.exe'),
       join('/build', 'win-arm64-unpacked', 'WorkDSH.exe'),
     ].sort()
@@ -66,14 +67,14 @@ describe('final Electron fuse verification', () => {
         electronPlatformName: 'linux',
         packager: {
           executableName: 'dsh-plugin-desktop',
-          appInfo: { productFilename: 'WorkDSH' },
+          appInfo: { productFilename: '三云Buddy' },
         },
       },
       {
         appOutDir: join('/build', 'mac-universal'),
         arch: 4,
         electronPlatformName: 'darwin',
-        packager: { appInfo: { productFilename: 'WorkDSH' } },
+        packager: { appInfo: { productFilename: '三云Buddy' } },
       },
       {
         appOutDir: join('/build', 'win-arm64-unpacked'),
@@ -92,7 +93,7 @@ describe('final Electron fuse verification', () => {
 
   it('honors Linux executableName and recovers a configured suffixless architecture', () => {
     const configured = result([{ key: 'linux', archs: [Arch.arm64] }], {
-      productName: 'WorkDSH',
+      productName: '三云Buddy',
       linux: { defaultArch: 'arm64', executableName: 'dsh-desktop' },
     })
     const executable = join('/build', 'linux-unpacked', 'dsh-desktop')
@@ -169,7 +170,7 @@ describe('final Electron fuse verification', () => {
   it('checks a macOS directory build even when MacPackager omits its target', () => {
     const built = {
       outDir: '/build',
-      configuration: { productName: 'WorkDSH', mac: { target: [{ target: 'dir', arch: 'arm64' }] } },
+      configuration: { productName: '三云Buddy', mac: { target: [{ target: 'dir', arch: 'arm64' }] } },
       platformToTargets: new Map([[{ buildConfigurationKey: 'mac' }, new Map()]]),
     } satisfies ElectronArtifactBuildResult
     expect(resolveFinalPackagedRuntimeContexts(built, () => true)).toEqual([
@@ -182,7 +183,7 @@ describe('final Electron fuse verification', () => {
     const platform = { buildConfigurationKey: 'win' }
     const built = {
       outDir: '/build',
-      configuration: { productName: 'WorkDSH' },
+      configuration: { productName: '三云Buddy' },
       platformToTargets: new Map([[platform, new Map([
         ['nsis', { archs: new Map([
           [Arch.x64, '/build/win-unpacked'],
@@ -205,7 +206,7 @@ describe('final Electron fuse verification', () => {
     ])]])
     const built = {
       outDir: '/build',
-      configuration: { productName: 'WorkDSH' },
+      configuration: { productName: '三云Buddy' },
       platformToTargets: new Map([[platform, new Map([
         ['dmg', { packager: { packagerOptions: { targets: requestedTargets } } }],
       ])]]),
@@ -213,10 +214,10 @@ describe('final Electron fuse verification', () => {
     const universalExecutable = join(
       '/build',
       'mac-universal',
-      'WorkDSH.app',
+      '三云Buddy.app',
       'Contents',
       'MacOS',
-      'WorkDSH',
+      '三云Buddy',
     )
     const exists = vi.fn((filename: string) => filename === universalExecutable)
 
@@ -229,8 +230,8 @@ describe('final Electron fuse verification', () => {
 
   it('checks every requested final executable after all artifact builds', async () => {
     const executables = [
-      join('/build', 'mac-arm64', 'WorkDSH.app', 'Contents', 'MacOS', 'WorkDSH'),
-      join('/build', 'mac', 'WorkDSH.app', 'Contents', 'MacOS', 'WorkDSH'),
+      join('/build', 'mac-arm64', '三云Buddy.app', 'Contents', 'MacOS', '三云Buddy'),
+      join('/build', 'mac', '三云Buddy.app', 'Contents', 'MacOS', '三云Buddy'),
     ]
     const events: string[] = []
     const read = vi.fn<ElectronFuseReader>(async (executable) => {

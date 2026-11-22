@@ -49,7 +49,7 @@ export async function afterPack(context: PackContext): Promise<void> {
   if (!packagedDeployment.equals(generatedDeployment)) throw new Error('Packaged deployment configuration differs from this build')
   if (!existsSync(archive)) throw new Error(`Missing Electron carrier: ${archive}`)
   const entries = listPackage(archive, { isPack: false }).map(normalizeAsarEntry)
-  if (!entries.includes('lib/workdsh-main.js')) throw new Error('Electron carrier has no WorkDSH entry point')
+  if (!entries.includes('lib/workdsh-main.js')) throw new Error('Electron carrier has no 三云Buddy entry point')
   if (!entries.includes('lib/connection-preload.cjs')) throw new Error('Electron carrier has no isolated connection preload')
   if (entries.some(entry => entry.startsWith('node_modules/'))) {
     throw new Error('Electron carrier contains duplicate node_modules; Harness must come only from the bundled Profile')
@@ -59,7 +59,7 @@ export async function afterPack(context: PackContext): Promise<void> {
     dependencies?: Record<string, string>
   }
   if (manifest.main !== 'lib/workdsh-main.js' || Object.keys(manifest.dependencies ?? {}).length > 0) {
-    throw new Error('Electron carrier must declare only the WorkDSH entry point, without runtime dependencies')
+    throw new Error('Electron carrier must declare only the 三云Buddy entry point, without runtime dependencies')
   }
 
   const runtime = join(resources, 'workdsh-runtime')
@@ -106,10 +106,10 @@ export async function afterPack(context: PackContext): Promise<void> {
   const selectedWorkdsh = selected.filter(name => name.startsWith('workdsh-'))
   const directWorkdsh = Object.keys(profileManifest.dependencies ?? {}).filter(name => name.startsWith('workdsh-'))
   if (selectedWorkdsh.length !== productPackages.size || selectedWorkdsh.some(name => !productPackages.has(name))) {
-    throw new Error(`Desktop must select exactly ${productPackages.size} WorkDSH product bundles, found ${selectedWorkdsh.join(', ')}`)
+    throw new Error(`Desktop must select exactly ${productPackages.size} 三云Buddy product bundles, found ${selectedWorkdsh.join(', ')}`)
   }
   if (directWorkdsh.length !== productPackages.size || directWorkdsh.some(name => !productPackages.has(name))) {
-    throw new Error(`Desktop must directly install exactly ${productPackages.size} WorkDSH product bundles, found ${directWorkdsh.join(', ')}`)
+    throw new Error(`Desktop must directly install exactly ${productPackages.size} 三云Buddy product bundles, found ${directWorkdsh.join(', ')}`)
   }
   const lockfile = readFileSync(join(profile, 'pnpm-lock.yaml'), 'utf8')
   for (const item of release.packages) {
@@ -117,7 +117,7 @@ export async function afterPack(context: PackContext): Promise<void> {
     const installed = JSON.parse(readFileSync(join(profile, 'node_modules', item.name, 'package.json'), 'utf8')) as { version?: string; exports?: Record<string, unknown>; peerDependencies?: Record<string, string> }
     if (installed.version !== item.version) throw new Error(`Bundled owned version mismatch: ${item.name}`)
     if (!productPackages.has(item.name) && Object.hasOwn(profileManifest.dependencies ?? {}, item.name)) {
-      throw new Error(`Internal WorkDSH service is a direct product dependency: ${item.name}`)
+      throw new Error(`Internal 三云Buddy service is a direct product dependency: ${item.name}`)
     }
     const dependencies = productPackages.has(item.name) ? profileManifest.dependencies : profileManifest.optionalDependencies
     if (dependencies?.[item.name]?.replaceAll('\\', '/') !== `file:../../package-cache/${item.filename}`) {
@@ -131,7 +131,7 @@ export async function afterPack(context: PackContext): Promise<void> {
   verifyDefaultComposition(patch)
   for (const name of release.packages.map(item => item.name).filter(name => !productPackages.has(name) && !ENTERPRISE_PACKAGES.includes(name))) {
     if (['workdsh-contracts', 'workdsh-ui', 'workdsh-provider-browser-session'].includes(name)) continue // inserted by the bundle patch
-    if (!patch.includes(`name: ${name}`)) throw new Error(`Internal WorkDSH service is missing from Profile patch: ${name}`)
+    if (!patch.includes(`name: ${name}`)) throw new Error(`Internal 三云Buddy service is missing from Profile patch: ${name}`)
   }
   if (/file:(?:\/|[a-z]:)/iu.test(lockfile)) {
     throw new Error('Bundled plugin lockfile contains a build-machine path')
@@ -166,7 +166,7 @@ export async function afterPack(context: PackContext): Promise<void> {
     timeout: 120_000,
   })
   if (inventory.error || inventory.status !== 0) {
-    throw new Error(`Packaged WorkDSH plugin inventory check failed: ${String(inventory.error ?? inventory.stderr)}`)
+    throw new Error(`Packaged 三云Buddy plugin inventory check failed: ${String(inventory.error ?? inventory.stderr)}`)
   }
   process.stdout.write(inventory.stdout)
   const hostCheck = fileURLToPath(new URL('./verify-installation-anchor.mjs', import.meta.url))

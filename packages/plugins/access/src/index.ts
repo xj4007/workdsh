@@ -394,7 +394,7 @@ export interface SessionAccessBridgeConfig {
   readonly autoBindFixedMemberSessions?: boolean;
 }
 
-/** Trusted Host ingress for WorkDSH Session creation and resume. */
+/** Trusted Host ingress for 三云Buddy Session creation and resume. */
 export class SessionAccessBridge extends Service {
   static inject = ['sessionController', 'workdshIdentity', 'workdshAccess', 'workdshAudit'];
   private readonly runtimeId: string;
@@ -604,7 +604,7 @@ export class ToolAccessBridge extends Service {
     } catch (error) {
       const code = error instanceof GovernanceContractError ? error.code : 'access/tool-policy-failed';
       if (actor) await this.auditTool(actor, exec, 'denied', code);
-      return { kind: 'deny', reason: `WorkDSH denied this tool call (${code}).` };
+      return { kind: 'deny', reason: `三云Buddy denied this tool call (${code}).` };
     }
     return next();
   }

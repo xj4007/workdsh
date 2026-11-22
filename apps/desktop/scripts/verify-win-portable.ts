@@ -35,7 +35,7 @@ export function verifyWindowsPortable(
   const portablePath = join(
     options.desktopRoot,
     'dist',
-    `WorkDSH-${options.version}-x64-Portable.zip`,
+    `SanyunBuddy-${options.version}-x64-Portable.zip`,
   )
   const stat = statSync(portablePath)
   if (!stat.isFile() || stat.size === 0) {

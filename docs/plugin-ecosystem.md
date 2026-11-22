@@ -20,7 +20,7 @@ DSH 的插件生态正在快速增长。插件越多，它们能否协同工作�
 
 ## 桌面版如何组合插件
 
-WorkDSH Desktop 使用 Electron 承载固定版本的官方 DSH 运行时。桌面壳负责窗口、安装和打包；WorkDSH 功能以 DSH 插件和 Profile 包组合，通过官方扩展接口与其他兼容插件协作。桌面壳本身不是 DSH 插件。
+三云Buddy Desktop 使用 Electron 承载固定版本的官方 DSH 运行时。桌面壳负责窗口、安装和打包；三云Buddy 功能以 DSH 插件和 Profile 包组合，通过官方扩展接口与其他兼容插件协作。桌面壳本身不是 DSH 插件。
 
 ## 活文档，社区共建
 

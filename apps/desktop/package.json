@@ -1,7 +1,7 @@
 {
   "name": "dsh-plugin-desktop",
   "version": "3.0.0-alpha.4",
-  "description": "WorkDSH Electron carrier for a pinned DeepSeek Harness runtime Profile",
+  "description": "三云Buddy Electron carrier for a pinned DeepSeek Harness runtime Profile",
   "license": "MIT",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
@@ -65,7 +65,7 @@
   },
   "build": {
     "appId": "io.techflag.dsh.ssh",
-    "productName": "WorkDSH",
+    "productName": "三云Buddy",
     "asar": {
       "smartUnpack": true
     },
@@ -100,7 +100,7 @@
       "!node_modules/**"
     ],
     "mac": {
-      "artifactName": "WorkDSH-${version}-${arch}.${ext}",
+      "artifactName": "SanyunBuddy-${version}-${arch}.${ext}",
       "asarUnpack": [
         "build/app-icon-mac.png",
         "build/tray-iconTemplate.png",
@@ -130,6 +130,7 @@
       "format": "UDBZ"
     },
     "win": {
+      "executableName": "WorkDSH",
       "asarUnpack": [
         "build/app-icon.png",
         "build/tray-icon-blue.png",
@@ -145,7 +146,7 @@
           ]
         }
       ],
-      "artifactName": "WorkDSH-${version}-${arch}-Portable.${ext}",
+      "artifactName": "SanyunBuddy-${version}-${arch}-Portable.${ext}",
       "icon": "build/app-icon.ico"
     },
     "nsis": {
@@ -159,10 +160,10 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "differentialPackage": false,
-      "shortcutName": "WorkDSH",
+      "shortcutName": "三云Buddy",
       "uninstallerIcon": "build/app-icon.ico",
       "useZip": false,
-      "artifactName": "WorkDSH-${version}-${arch}-Setup.${ext}"
+      "artifactName": "SanyunBuddy-${version}-${arch}-Setup.${ext}"
     },
     "linux": {
       "asarUnpack": [
