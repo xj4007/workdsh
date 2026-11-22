@@ -27,8 +27,6 @@ export const WINDOWS_APP_ICON_SIZES = Object.freeze([
 
 const SOURCE_CANVAS_SIZE = 1024
 const SMALL_FRAME_MAX_SIZE = 40
-const BRAND_BLUE = '#176BFF'
-const BRAND_CYAN = '#18CFE7'
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)))
 const sourcePath = join(packageRoot, 'build', 'app-icon.png')
@@ -36,33 +34,9 @@ const markPath = join(packageRoot, 'build', 'tray-icon.svg')
 const outputPath = join(packageRoot, 'build', 'app-icon.ico')
 
 /**
- * Reuse the repository's vector whale for frames where the full shaded artwork
- * loses recognizable detail. The flat blue-on-light treatment preserves the
- * stable icon's silhouette and brand colors at native Windows chrome sizes.
- * @returns {Promise<Buffer>} Self-contained SVG for small Windows frames.
- */
-async function loadSmallFrameArtwork() {
-  const source = await readFile(markPath, 'utf8')
-  if (!(source.includes(`fill="${BRAND_BLUE}"`) || source.includes(`stroke="${BRAND_BLUE}"`)) || /<style\b/iu.test(source)) {
-    throw new Error(`generate-windows-app-icon: tray-icon.svg must use the fixed brand color ${BRAND_BLUE}`)
-  }
-  const mark = source
-    .replace(/^<svg[^>]*>\s*/u, '')
-    .replace(/<\/svg>\s*$/u, '')
-  return Buffer.from(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">'
-    + '<rect width="256" height="256" rx="52" fill="#FFFFFF"/>'
-    + `<g transform="translate(18 18) scale(0.86)">${mark}</g>`
-    + '</svg>',
-  )
-}
-
-/**
- * Render one icon frame from the full-resolution stable artwork.
- * Small frames use the simplified vector treatment and receive a restrained
- * unsharp pass after Lanczos downsampling.
+ * Render one icon frame. Small frames reuse the transparent tray artwork.
  * @param {string} source - absolute path to the canonical 1024px PNG.
- * @param {Buffer} smallArtwork - simplified vector artwork for native small sizes.
+ * @param {Buffer} smallArtwork - tray artwork for native small sizes.
  * @param {number} size - square output size in native pixels.
  * @returns {Promise<{ png: Buffer, rgba: Buffer }>} Encoded and raw 8-bit RGBA data.
  */
@@ -194,7 +168,7 @@ export async function generateWindowsAppIcon(source = sourcePath, output = outpu
     )
   }
 
-  const smallArtwork = await loadSmallFrameArtwork()
+  const smallArtwork = await readFile(markPath)
   const rendered = await Promise.all(WINDOWS_APP_ICON_SIZES.map(async size => {
     const frame = await renderFrame(source, smallArtwork, size)
     return {
