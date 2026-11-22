@@ -1,6 +1,6 @@
 # DSH Desktop repository rules
 
-This repository owns WorkDSH Web and Desktop. Desktop and Web consume the same exact official DSH published package version. Desktop binary dependencies and command-management helpers are extracted from checksum-locked official release installers.
+This repository owns 三云Buddy Web and Desktop. Desktop and Web consume the same exact official DSH published package version. Desktop binary dependencies and command-management helpers are extracted from checksum-locked official release installers.
 
 ## Git branch and release policy
 
@@ -23,16 +23,17 @@ This repository owns WorkDSH Web and Desktop. Desktop and Web consume the same e
 - Run type checking with `corepack yarn typecheck`.
 - Run the complete headless gate with `corepack yarn check`.
 - `apps/desktop/` is the only Desktop source and release workspace. Do not reintroduce a copied Beta package; optional release channels must build from this same source and pinned DSH version.
-- The official release version locked in `upstream.json` is the single DSH version for the packaged WorkDSH Profile. Desktop source is an Electron carrier without direct DSH dependencies. A DSH upgrade is incomplete until `corepack yarn check:desktop-dsh-alignment`, the Desktop checks, and a packaged-runtime check pass. Default to the newest official stable DSH release after compatibility validation; use a pre-release only by explicit product decision. Do not tag a Desktop release while the version gate fails. The carrier must contain no second DSH installation.
-- `apps/web/` owns Web launch, deployment and verification. Root `packages/` owns shared WorkDSH feature packages, and root `profiles/` owns composition. Its package manifests must declare the same exact DSH version as `upstream.json`; run `corepack yarn check:web-dsh-alignment` when either side changes. The Web workspace remains self-contained and does not import or modify the official source tree.
+- The official release version locked in `upstream.json` is the single DSH version for the packaged 三云Buddy Profile. Desktop source is an Electron carrier without direct DSH dependencies. A DSH upgrade is incomplete until `corepack yarn check:desktop-dsh-alignment`, the Desktop checks, and a packaged-runtime check pass. Default to the newest official stable DSH release after compatibility validation; use a pre-release only by explicit product decision. Do not tag a Desktop release while the version gate fails. The carrier must contain no second DSH installation.
+- `apps/web/` owns Web launch, deployment and verification. Root `packages/` owns shared 三云Buddy feature packages, and root `profiles/` owns composition. Its package manifests must declare the same exact DSH version as `upstream.json`; run `corepack yarn check:web-dsh-alignment` when either side changes. The Web workspace remains self-contained and does not import or modify the official source tree.
 
-- `apps/desktop/` owns the Electron carrier, packaging, and release tests. DSH Host and Client code comes from the published official runtime Profile; WorkDSH features belong to the WorkDSH Profile packages.
+- `apps/desktop/` owns the Electron carrier, packaging, and release tests. DSH Host and Client code comes from the published official runtime Profile; 三云Buddy features belong to the 三云Buddy Profile packages.
 - The Desktop workspace uses the root Yarn release with `nodeLinker: node-modules`. The nested `apps/web/` workspace retains its own pinned pnpm lockfile and package manager; run its commands from that directory. Do not install it into the root Yarn workspace.
-- Keep presentation and WorkDSH feature changes in the Profile rather than adding a second Desktop Host or Client implementation.
+- Keep presentation and 三云Buddy feature changes in the Profile rather than adding a second Desktop Host or Client implementation.
 - Keep graphical application launch explicit. Builds, typechecks, unit tests, and Loader smokes must remain headless-safe.
 
 ## Current authorized npm migration
 
+- When upgrading DSH or changing product branding, review the [brand migration record and upgrade checklist](docs/BRANDING-MIGRATION.md).
 - The user explicitly requires the latest published DSH release, currently `0.2.1-rc.5` (2026-10-30). Every actual DSH Host, Client and SDK npm package must use this same exact version. Web preview and Desktop preserve the complete native Conversation, using public Workspace/Layout APIs and only the narrowly authorized shared outer-frame patch below, without embedded custom conversation controls. Matching artifact hashes do not prove Desktop packaged-runtime acceptance; do not release Desktop until its runtime and UI checks pass.
 - `upstream.json` separately locks each official binary archive's own version, URL, size and SHA-512. The explicitly locked macOS Intel archive remains the official `0.2.1-rc.4` archive solely for Node, pnpm, Python, Office assets and prebuilt command helpers, because no Intel `rc.5` archive is published. It must not supply DSH Host, Client or SDK packages. Preserve its original `runtime.json` and record the source accurately; do not relabel it as `rc.5` or implement an automatic fallback. Intel publication requires checks against its actual packaged x64 Resources, in addition to the common npm version gate.
 

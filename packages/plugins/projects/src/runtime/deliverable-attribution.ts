@@ -12,7 +12,7 @@ declare module '@deepseek-ai/cordis' { interface Context { workdshLibrary: Libra
  * `present` tool inside a project task session are registered in the owning Library
  * (source=task, sourceTaskId=session) and linked to the project as asset references.
  * The Harness session log stays the execution truth; this listener only mirrors the
- * official delivery signal into WorkDSH's object/relation data.
+ * official delivery signal into 三云Buddy's object/relation data.
  */
 
 /** Import nothing larger than the Library's own upload limit; oversized deliveries are skipped. */

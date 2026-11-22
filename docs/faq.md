@@ -1,10 +1,10 @@
-# WorkDSH 常见问题
+# 三云Buddy 常见问题
 
 [English](faq.en.md)
 
 ## 这是 DeepSeek 官方产品吗？
 
-不是。WorkDSH 是基于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的独立社区项目，未获得官方背书。
+不是。三云Buddy 是基于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) 的独立社区项目，未获得官方背书。
 
 ## 支持哪些平台？
 
@@ -16,7 +16,7 @@
 
 ## 是否修改了官方 Harness？
 
-没有。仓库使用固定版本的官方发布包及校验过的 Desktop 发布产物，不编译官方源码。Electron 外壳启动该版本的 DSH Profile，WorkDSH 功能由 Profile 包组合。
+没有。仓库使用固定版本的官方发布包及校验过的 Desktop 发布产物，不编译官方源码。Electron 外壳启动该版本的 DSH Profile，三云Buddy 功能由 Profile 包组合。
 
 ## 数据与插件在哪里？
 

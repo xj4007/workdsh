@@ -450,7 +450,7 @@ export class ExpertsManager extends Service implements ExpertsService {
    * Recompile an older published team for the current runtime without mutating its
    * immutable revision. Existing Sessions keep their old binding; only future
    * executions move to the derived revision. This is intentionally done on use so
-   * installations upgraded from an earlier WorkDSH release need no manual republish.
+   * installations upgraded from an earlier 三云Buddy release need no manual republish.
    */
   private async ensureCurrentExecutionRevision(actor: ActorContext, revision: ExpertRevision, signal?: AbortSignal): Promise<ExpertRevision> {
     if (!revision.definition.team || revision.compilerVersion === COMPILER_VERSION) return revision;

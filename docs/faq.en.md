@@ -1,10 +1,10 @@
-# WorkDSH FAQ
+# 三云Buddy FAQ
 
 [中文](faq.md)
 
 ## Is this an official DeepSeek product?
 
-No. WorkDSH is an independent community project built on [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) and is not officially endorsed.
+No. 三云Buddy is an independent community project built on [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) and is not officially endorsed.
 
 ## Which platforms are supported?
 
@@ -16,7 +16,7 @@ Ordinary users do not. The installer includes a pinned runtime and DSH Profile. 
 
 ## Is official Harness modified?
 
-No. The repository pins official published packages and Desktop release archives, without building official source. The Electron carrier starts that DSH Profile, and WorkDSH features are composed by Profile packages.
+No. The repository pins official published packages and Desktop release archives, without building official source. The Electron carrier starts that DSH Profile, and 三云Buddy features are composed by Profile packages.
 
 ## Where are data and plugins?
 

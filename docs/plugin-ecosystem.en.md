@@ -20,7 +20,7 @@ We want to build an **open, composable, and sustainable** DSH plugin ecosystem:
 
 ## How Desktop composes plugins
 
-WorkDSH Desktop uses Electron to carry a pinned official DSH runtime. The shell owns windows, installation, and packaging; WorkDSH features are composed as DSH plugins and Profile packages through official extension APIs alongside other compatible plugins. The Electron shell itself is not a DSH plugin.
+三云Buddy Desktop uses Electron to carry a pinned official DSH runtime. The shell owns windows, installation, and packaging; 三云Buddy features are composed as DSH plugins and Profile packages through official extension APIs alongside other compatible plugins. The Electron shell itself is not a DSH plugin.
 
 ## A living document, built with the community
 

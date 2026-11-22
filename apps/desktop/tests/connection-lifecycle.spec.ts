@@ -30,14 +30,14 @@ vi.mock('electron', async () => {
   return {
     BrowserWindow: Window,
     ipcMain: { handle: (name: string, fn: any) => { state.handlers[name] = fn } },
-    app: Object.assign(new EventEmitter(), { setActivationPolicy: vi.fn(), setName: vi.fn(), requestSingleInstanceLock: () => true, whenReady: async () => {}, quit: vi.fn(), relaunch: vi.fn(), getPath: () => state.userData, getAppPath: () => '/tmp/WorkDSH development/app' }),
+    app: Object.assign(new EventEmitter(), { setActivationPolicy: vi.fn(), setName: vi.fn(), requestSingleInstanceLock: () => true, whenReady: async () => {}, quit: vi.fn(), relaunch: vi.fn(), getPath: (name: string) => name === 'appData' ? join(state.userData, '..') : state.userData, setPath: vi.fn(), getAppPath: () => '/tmp/三云Buddy development/app' }),
     shell: { openExternal: vi.fn() }, dialog: { showErrorBox: vi.fn(), showOpenDialog: vi.fn(async () => ({ canceled: true, filePaths: [] })) },
     Menu: { buildFromTemplate: (menu: any[]) => { state.menu = menu; return menu }, setApplicationMenu: vi.fn() },
   }
 })
 
 it('enforces the packaged backend, uses explicitly installed enterprise identity, and clears locally despite remote logout failure', async () => {
-  const root = mkdtempSync(join(tmpdir(), 'workdsh-lifecycle-')); state.userData = join(root, 'desktop')
+  const root = mkdtempSync(join(tmpdir(), 'workdsh-lifecycle-')); state.userData = join(root, 'WorkDSH')
   const resourcesDescriptor = Object.getOwnPropertyDescriptor(process, 'resourcesPath')
   Object.defineProperty(process, 'resourcesPath', { value: join(root, 'resources'), configurable: true })
   mkdirSync(join(root, 'resources')); mkdirSync(state.userData)
@@ -76,6 +76,8 @@ it('enforces the packaged backend, uses explicitly installed enterprise identity
   try {
     await import('../src/workdsh-main.ts')
     const { app: startupApp } = await import('electron')
+    expect(startupApp.setPath).toHaveBeenCalledWith('userData', state.userData)
+    expect(startupApp.setName).toHaveBeenCalledWith('三云Buddy')
     if (process.platform === 'darwin') expect(startupApp.setActivationPolicy).toHaveBeenCalledWith('regular')
     else expect(startupApp.setActivationPolicy).not.toHaveBeenCalled()
     await vi.waitFor(() => expect(state.windows).toHaveLength(1))

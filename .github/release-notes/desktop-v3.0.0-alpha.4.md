@@ -1,4 +1,4 @@
-# WorkDSH Desktop 3.0.0-alpha.4
+# 三云Buddy Desktop 3.0.0-alpha.4
 
 升级至官方 DeepSeek Harness **0.2.1-rc.5**。Desktop 与 Web 共用相同版本的 Host、Client 与 SDK，保留完整原生对话，以及工作台与 AI 对话并排布局。
 
