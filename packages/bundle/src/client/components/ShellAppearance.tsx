@@ -6,7 +6,42 @@ export function ShellAppearance() {
   // row. The pinned slots expose no sibling ordering and skillhub registers its own footer action,
   // so the footer order/visibility is a DOM seam; the account menu has no item filter either.
   React.useEffect(() => {
-    const trimAccountMenu = (): void => {
+    const ensurePlazaItem = (menu: HTMLElement): void => {
+      if (menu.querySelector('[data-workdsh-plaza-item]')) return;
+      const plazaTrigger = document.querySelector<HTMLElement>('.sh-plaza-trigger');
+      const plazaIcon = plazaTrigger?.querySelector('svg');
+      const viewport = menu.querySelector<HTMLElement>('[role="presentation"]');
+      const settings = menu.querySelector<HTMLElement>('[role="menuitem"][aria-keyshortcuts="Control+Alt+,"]');
+      const feedback = [...menu.querySelectorAll<HTMLElement>('[role="menuitem"]')]
+        .find((item) => item.textContent?.trim() === '意见反馈');
+      const template = feedback?.parentElement ?? settings?.parentElement;
+      if (!plazaTrigger || !plazaIcon || !viewport || !template) return;
+
+      const item = template.cloneNode(true) as HTMLElement;
+      item.removeAttribute('style');
+      item.dataset.workdshPlazaItem = '';
+      const button = item.querySelector<HTMLElement>('[role="menuitem"]');
+      const icon = button?.querySelector<HTMLElement>('span');
+      const label = icon?.nextElementSibling;
+      if (!button || !icon || !(label instanceof HTMLElement)) return;
+
+      button.removeAttribute('aria-keyshortcuts');
+      button.querySelector('kbd')?.closest('[aria-hidden="true"]')?.remove();
+      label.textContent = '插件广场';
+      icon.replaceChildren(plazaIcon.cloneNode(true));
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const plaza = document.querySelector<HTMLElement>('.sh-plaza-trigger');
+        if (!plaza) return;
+        plaza.click();
+        (document.querySelector<HTMLElement>('[data-slot="settings.launcher"] button[aria-label="账号菜单"]')
+          ?? document.querySelector<HTMLElement>('button[aria-label="账号菜单"]'))?.click();
+      });
+      viewport.append(item);
+    };
+
+    const syncAccountMenu = (): void => {
       for (const menu of document.querySelectorAll<HTMLElement>('[role="menu"]')) {
         // The settings shortcut identifies the official account menu; leave every other menu alone.
         if (!menu.querySelector('[role="menuitem"][aria-keyshortcuts="Control+Alt+,"]')) continue;
@@ -17,9 +52,10 @@ export function ShellAppearance() {
             (wrap && wrap !== menu ? wrap : item).style.setProperty('display', 'none', 'important');
           }
         }
+        ensurePlazaItem(menu);
       }
     };
-    const observer = new MutationObserver(trimAccountMenu);
+    const observer = new MutationObserver(syncAccountMenu);
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
   }, []);
