@@ -126,6 +126,23 @@ describe('Desktop Main enterprise authority', () => {
     expect(await login.logout()).toBe(false)
     await expect(login.verify()).rejects.toThrow('已退出')
   })
+  it('adopts an existing platform token for an enterprise space without sending credentials', async () => {
+    const calls: { url: string, init?: RequestInit }[] = []
+    const request = (async (url: string | URL | Request, init?: RequestInit) => {
+      calls.push({ url: String(url), ...(init ? { init } : {}) })
+      return json(actor)
+    }) as typeof fetch
+    const login = await EnterpriseLogin.fromSession('https://company.test/', token, request)
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.url).toBe('https://company.test/api/auth/me')
+    expect(calls[0]!.init).toMatchObject({ headers: { Authorization: `Bearer ${token}` }, redirect: 'error' })
+    expect(calls[0]!.init!.body).toBeUndefined()
+    expect(login.backendUrl).toBe('https://company.test')
+    expect(login.actor.id).toBe('member-a')
+    const expired = (async () => json({}, 401)) as typeof fetch
+    await expect(EnterpriseLogin.fromSession('https://company.test', token, expired)).rejects.toThrow('企业空间授权已失效')
+    await expect(EnterpriseLogin.fromSession('https://company.test', 'short', request)).rejects.toThrow('企业空间令牌无效')
+  })
 })
 
  describe('enterprise extension transport', () => {
