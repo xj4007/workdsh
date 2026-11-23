@@ -70,7 +70,7 @@
 | S3 | `local-runtime.ts` `acknowledgePreviewNotice()` | 用户层设置行 `id: ui-settings-general`、`config.welcomeNoticeVersion: 2026-09-28.1`（官方「预览版说明」弹窗版本号） | 新账号登录又弹「预览版说明」 | 新建账号登录后确认无弹窗；官方改版本号时把常量跟着更新 |
 | S4 | `packages/ui/src/components/LogoMark.tsx` | 官方 `sidebar.brand.mark` 只给尺寸/类名，不要求图形格式 | 品牌位退回官方鱼形 logo 或空白 | 看侧栏左上角是否为云朵图 |
 | S5 | `managed-bridge.ts` 的注入字段 | 我们的计费网关要求 `price_version` + `request_id`，且 `usage` 要回传 | 网关 400/409，聊天失败或积分不动 | 发一条消息，看 `/api/admin/platform/ledger` 有新 `USAGE` 行 |
-| S6 | `ShellAppearance.tsx` 的 effect 与 `<style>` | 官方底栏 `footerActions` 后紧跟 `settingsArea`；官方账号菜单是含 `aria-keyshortcuts="Control+Alt+,"`「设置」项的 `[role="menu"]`，另有「意见反馈」「登录」（已登录为「退出登录」）；第三方 skillhub 在 footer action 内渲染 `.sh-plaza-wrap`，按钮 `.sh-plaza-trigger` 打开 `.sh-plaza-page` 对话框 | 左下角恢复三个入口或「更多」回到账号行下方；更多菜单重新出现「意见反馈」「登录」或没有「插件广场」 | CDP：底栏自上而下只有「更多」和 `[data-testid="workdsh-account-footer"]`（无「插件广场」）；打开账号菜单可见「设置」「插件广场」，点击「插件广场」打开 `.sh-plaza-page` 且菜单关闭 |
+| S6 | `ShellAppearance.tsx` 的 effect 与 `<style>` | 官方底栏 `footerActions` 后紧跟 `settingsArea`；官方账号菜单是含 `aria-keyshortcuts="Control+Alt+,"`「设置」项的 `[role="menu"]`，另有「意见反馈」「登录」（已登录为「退出登录」）；第三方 skillhub 在 footer action 内渲染 `.sh-plaza-wrap`，按钮 `.sh-plaza-trigger` 打开 `.sh-plaza-page` 对话框 | 左下角恢复三个入口或「更多」回到账号行下方；更多菜单重新出现「意见反馈」「登录」（已登录为「退出登录」）或没有「插件广场」 | CDP：底栏自上而下只有「更多」和 `[data-testid="workdsh-account-footer"]`（无「插件广场」）；打开账号菜单可见「设置」「插件广场」，点击「插件广场」打开 `.sh-plaza-page` 且菜单关闭 |
 
 > S1/S2/S6 的查询只用结构选择器，不硬编码官方 hash 类名：官方改版时最坏情况是「多显示一行」，不会把布局弄崩。S6 还会克隆官方菜单项节点（保留其当前 class 以复用样式），并依赖第三方 skillhub 的 `.sh-plaza-wrap`/`.sh-plaza-trigger` 类名和菜单项中文文案；skillhub 或官方菜单改版时按 S6 的回归方法重新截图并更新本表。
 

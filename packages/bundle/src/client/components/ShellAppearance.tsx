@@ -48,7 +48,7 @@ export function ShellAppearance() {
         if (!menu.querySelector('[role="menuitem"][aria-keyshortcuts="Control+Alt+,"]')) continue;
         for (const item of menu.querySelectorAll<HTMLElement>('[role="menuitem"]')) {
           const label = item.textContent?.trim();
-          if (label === '意见反馈' || label === '登录') {
+          if (label === '意见反馈' || label === '登录' || label === '退出登录') {
             const wrap = item.parentElement;
             (wrap && wrap !== menu ? wrap : item).style.setProperty('display', 'none', 'important');
           }
