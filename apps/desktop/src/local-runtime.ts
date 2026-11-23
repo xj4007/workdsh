@@ -124,6 +124,23 @@ export function markProfileUpdated(source: string, profile: string): void {
   writeJson(join(profile, BASE_STATE), { digest, base })
 }
 
+/**
+ * Every fresh space starts on the official "预览版说明" notice. Record the acknowledgement the Settings
+ * page writes so the workbench opens straight into the conversation.
+ */
+export function acknowledgePreviewNotice(home: string): void {
+  const file = join(home, 'profiles', 'workdsh', 'cordis.patch.yml')
+  const existing = existsSync(file) ? readFileSync(file, 'utf8') : ''
+  // The materialized profile starts with an empty flow sequence; two root nodes are not valid YAML.
+  const body = existing.split('\n').filter(line => line.trim() !== '[]').join('\n').trim()
+  const row = '- id: ui-settings-general\n  name: "@deepseek-ai/dsh-client-ui-settings-general"\n  config:\n    welcomeNoticeVersion: 2026-09-28.1'
+  if (body.includes('ui-settings-general')) {
+    if (existing.trim() !== body) writeFileSync(file, `${body}\n`, { mode: 0o600 })
+    return
+  }
+  writeFileSync(file, body ? `${body}\n${row}\n` : `${row}\n`, { mode: 0o600 })
+}
+
 export function enterpriseSpace(userData: string, backend: string, actor: EnterpriseMember): { root: string, home: string, deviceId: string } {
   const root = join(userData, 'enterprise', enterpriseNamespace(backend, actor.organizationId, actor.id))
   mkdirSync(root, { recursive: true, mode: 0o700 })

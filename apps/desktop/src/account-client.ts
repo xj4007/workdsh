@@ -175,6 +175,12 @@ export class AccountClient {
     return data
   }
 
+  async config(): Promise<{ registrationEnabled: boolean }> {
+    const response = await this.#call('/api/account/config')
+    const row = record(await this.#json(response, '读取注册配置'))
+    return { registrationEnabled: row.registrationEnabled === true }
+  }
+
   async requestCode(email: string): Promise<{ expiresAt?: string, code?: string }> {
     const response = await this.#call('/api/account/request-code', { method: 'POST', body: JSON.stringify({ email }) })
     const row = record(await this.#json(response, '发送验证码'))

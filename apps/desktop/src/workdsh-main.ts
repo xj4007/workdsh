@@ -17,7 +17,7 @@ import { connectionEntryHtml, spacePickerHtml, connectionLoadingHtml } from './c
 import { connectionPartition, type DesktopConnection } from './connection-mode.ts'
 import { parseDeploymentConfig, serviceOrigin as resolveServiceOrigin } from './deployment-config.ts'
 import { EnterpriseLogin, startEnterpriseAuthority, type Authority } from './enterprise-auth.ts'
-import { personalSpace, desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher } from './local-runtime.ts'
+import { acknowledgePreviewNotice, personalSpace, desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher } from './local-runtime.ts'
 import { startManagedBridge, type AccountSummary, type ManagedBridge } from './managed-bridge.ts'
 import { manageCommand } from './command-management.ts'
 import { createRuntimeOutputRedactor, redactRuntimeOutput, runtimeFailureDetail, runtimeFailureLog } from './runtime-diagnostics.ts'
@@ -48,6 +48,7 @@ let returnRequested = false
 let installer: ChildProcess | undefined
 const enterpriseWindows = new Set<BrowserWindow>()
 let accountOrigin = 'https://sanyunbuddy.sycjlht.com'
+let registrationEnabled = false
 let accountSession: ActiveAccount | undefined
 let accountBridge: ManagedBridge | undefined
 let pendingLogin: { client: AccountClient, result: LoginResult } | undefined
@@ -153,7 +154,14 @@ function openWindow(url: string, connection: DesktopConnection = { mode: 'person
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
-      ...(carrier ? { preload: fileURLToPath(new URL('./connection-preload.cjs', import.meta.url)) } : {}),
+      ...(carrier
+        ? { preload: fileURLToPath(new URL('./connection-preload.cjs', import.meta.url)) }
+        : accountBridge
+          ? {
+              preload: fileURLToPath(new URL('./account-preload.cjs', import.meta.url)),
+              additionalArguments: [`--workdsh-account-url=${accountBridge.url}`, `--workdsh-account-key=${accountBridge.key}`],
+            }
+          : {}),
       ...(connectionPartition(connection) === undefined ? {} : { partition: connectionPartition(connection)! }),
     },
   })
@@ -234,6 +242,7 @@ async function prepareProfile(home: string): Promise<{ profile: string, existing
   const existingHome = [join(home, 'profiles', PROFILE_NAME, 'package.json'), join(home, 'profiles', PROFILE_NAME, 'cordis.yml'), join(home, 'cordis.yml'), join(home, '.workdsh-host.mjs')].some(existsSync)
   const source = bundledProfileDirectory()
   const result = materializeRuntimeProfile(source, home)
+  acknowledgePreviewNotice(home)
   if (result.changed) {
     const entry = window
     if (entry && !entry.isDestroyed()) await entry.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(connectionLoadingHtml('正在更新工作区插件依赖')))
@@ -392,7 +401,17 @@ function endSwitch(): void {
 }
 
 function showConnectionEntry(): void {
-  openWindow('data:text/html;charset=utf-8,' + encodeURIComponent(connectionEntryHtml(accountOrigin)), { mode: 'personal' }, true)
+  openWindow('data:text/html;charset=utf-8,' + encodeURIComponent(connectionEntryHtml(accountOrigin, registrationEnabled)), { mode: 'personal' }, true)
+}
+
+async function readRegistrationEnabled(): Promise<boolean> {
+  try {
+    const config = await Promise.race([
+      new AccountClient(accountOrigin).config(),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error('读取注册配置超时')), 3_000)),
+    ])
+    return config.registrationEnabled
+  } catch { return false }
 }
 
 function summaryOf(session: ActiveAccount, wallet: AccountSummary['wallet']): AccountSummary {
@@ -659,7 +678,7 @@ if (!app.requestSingleInstanceLock()) {
       app.quit()
     }
   })
-  void app.whenReady().then(() => {
+  void app.whenReady().then(async () => {
     const deploymentFile = join(process.resourcesPath ?? '', 'workdsh-config.json')
     let deployment = {}
     if (existsSync(deploymentFile)) {
@@ -673,6 +692,7 @@ if (!app.requestSingleInstanceLock()) {
     accountOrigin = resolveServiceOrigin(deployment)
     installConnectionMenu()
     installAccountHandlers()
+    registrationEnabled = await readRegistrationEnabled()
     showConnectionEntry()
   }).catch(cause => {
     process.stderr.write(`三云Buddy failed to start: ${cause instanceof Error ? cause.stack ?? cause.message : String(cause)}\n`)

@@ -15,7 +15,7 @@ import { BrandMark, BrandName, DiagnosticsMark } from '../components/Brand.js';
 import { DiagnosticsPanel, type Inventory } from '../components/DiagnosticsPanel.js';
 import { NavigationLocation } from '../components/NavigationLocation.js';
 import { AgentBrowserPage, agentBrowserKind, readAgentBrowserFrame } from '../components/AgentBrowserPage.js';
-import { AccountFooter } from '../components/AccountFooter.js';
+import { AccountFooter, accountBridge } from '../components/AccountFooter.js';
 
 declare module '@deepseek-ai/cordis' {
   interface Context { market: MarketHost; }
@@ -106,7 +106,7 @@ export function apply(ctx: Context): void {
     return () => { disposed = true; unsubscribe(); window.clearInterval(timer); };
   }, 'workdsh.agent-browser.auto-open');
   ctx.slots.inject('shell.overlay', () => ctx.slots.register({ name: 'shell.overlay', id: 'workdsh-shell-appearance' }, ShellAppearance));
-  if (new URL(window.location.href).searchParams.has('workdshAccountUrl')) {
+  if (accountBridge()) {
     ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
       name: 'sidebar.footer.action', id: 'workdsh-account',
     }, AccountFooter));
