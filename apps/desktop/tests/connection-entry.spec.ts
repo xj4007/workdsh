@@ -12,6 +12,7 @@ it('renders an account-only entry with a fixed service origin and no anonymous o
   expect(html).toContain('id="account-login"')
   expect(html).toContain('id="account-register"')
   expect(html).toContain('id="request-code"')
+  expect(html).toContain('form[hidden]{display:none}')
   expect(html).toContain('minlength="12"')
   expect(html).toContain('aria-live="polite"')
   expect(html).toContain('prefers-color-scheme:dark')

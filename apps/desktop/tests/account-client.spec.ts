@@ -56,6 +56,17 @@ describe('AccountClient', () => {
     expect(reply).toEqual({ expiresAt: '2030-01-01T00:00:00Z', code: '123456' })
   })
 
+  it('reads the public registration switch and fails closed on malformed replies', async () => {
+    const { client, calls } = recording(() => json({ registrationEnabled: true }))
+    await expect(client.config()).resolves.toEqual({ registrationEnabled: true })
+    expect(calls[0]!.url).toBe('https://company.test/api/account/config')
+    expect(headersOf(calls[0]!.init).get('Authorization')).toBeNull()
+    const missing = new AccountClient('https://company.test/', stub(() => json({})))
+    await expect(missing.config()).resolves.toEqual({ registrationEnabled: false })
+    const off = new AccountClient('https://company.test/', stub(() => json({ registrationEnabled: false })))
+    await expect(off.config()).resolves.toEqual({ registrationEnabled: false })
+  })
+
   it('attaches the bearer token to authenticated reads and encodes the space id on switch', async () => {
     const { client, calls } = recording(call => {
       const path = new URL(call.url).pathname

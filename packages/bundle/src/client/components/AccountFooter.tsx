@@ -7,7 +7,14 @@ type Summary = {
   wallet: { availableCredits: string, balanceCredits: string } | null;
 };
 
-function bridge(): { url: string, key: string } | undefined {
+declare global {
+  interface Window { __workdshAccountBridge?: { url: string, key: string } }
+}
+
+/** The Desktop carrier injects the loopback bridge; the query fallback serves older carriers. */
+export function accountBridge(): { url: string, key: string } | undefined {
+  const injected = window.__workdshAccountBridge;
+  if (injected?.url && injected.key) return injected;
   const search = new URL(window.location.href).searchParams;
   const url = search.get('workdshAccountUrl');
   const key = search.get('workdshAccountKey');
@@ -15,7 +22,7 @@ function bridge(): { url: string, key: string } | undefined {
 }
 
 async function call(path: string, method = 'GET', body?: unknown): Promise<Summary> {
-  const endpoint = bridge();
+  const endpoint = accountBridge();
   if (!endpoint) throw new Error('账户桥接未就绪');
   const response = await fetch(`${endpoint.url}${path}`, {
     method,
@@ -32,6 +39,16 @@ export function AccountFooter({ wide }: { wide: boolean }) {
   const [error, setError] = React.useState<string>();
   const [open, setOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
+  const root = React.useRef<HTMLDivElement | null>(null);
+
+  // The official footer row is a single non-wrapping flex row shared by every footer action; wrap it
+  // so this entry and the plugin market stack instead of competing for the same 256px.
+  React.useEffect(() => {
+    const row = root.current?.closest('[data-slot="sidebar.footer.action"]')?.parentElement;
+    if (!row) return;
+    row.style.flexWrap = 'wrap';
+    return () => { row.style.flexWrap = ''; };
+  }, []);
 
   const refresh = React.useCallback(async () => {
     try {
@@ -49,9 +66,13 @@ export function AccountFooter({ wide }: { wide: boolean }) {
   }, [refresh]);
 
   const wallet = summary?.wallet;
+  // The footer row also hosts the plugin-market action, so only the space and the credits stay inline.
   const text = summary
-    ? `${summary.account.displayName} · ${summary.space.name} · ${wallet ? `${wallet.availableCredits} 积分` : '积分暂不可用'}`
+    ? `${summary.space.name} · ${wallet ? `${wallet.availableCredits} 积分` : '积分暂不可用'}`
     : error ? '账户暂不可用' : '账户加载中';
+  const title = summary
+    ? `${summary.account.displayName} · ${summary.space.name} · ${wallet ? `${wallet.availableCredits} 积分` : '积分暂不可用'}`
+    : text;
 
   const act = async (path: string, body?: unknown): Promise<void> => {
     setBusy(true);
@@ -61,22 +82,24 @@ export function AccountFooter({ wide }: { wide: boolean }) {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%' }}>
+    // The account entry and the plugin-market action are two separate menus, so ours claims a whole
+    // row and the shared footer row is allowed to wrap (restored on unmount).
+    <div ref={root} style={{ position: 'relative', flex: '1 0 100%', minWidth: 0, maxWidth: '100%' }}>
       <button
         type="button"
         data-testid="workdsh-account-footer"
         aria-expanded={open}
-        title={text}
+        title={title}
         onClick={() => setOpen(value => !value)}
         style={{
-          display: 'flex', alignItems: 'center', gap: 6, width: '100%', minHeight: 30,
+          display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, minHeight: 30,
           padding: wide ? '5px 8px' : '5px 4px', border: 0, borderRadius: 6,
           background: 'transparent', color: 'inherit', font: 'inherit', fontSize: 12,
           textAlign: 'left', cursor: 'pointer', opacity: busy ? 0.7 : 1,
         }}
       >
-        <span aria-hidden style={{ width: 18, height: 18, borderRadius: 9, background: '#4b6bfb', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, flex: '0 0 auto' }}>云</span>
-        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
+        <span aria-hidden style={{ width: 18, height: 18, borderRadius: 9, background: '#4b6bfb', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, flex: '0 0 auto' }}>{summary ? [...summary.account.displayName][0] ?? '云' : '云'}</span>
+        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>{text}</span>
       </button>
       {open && (
         <div style={{

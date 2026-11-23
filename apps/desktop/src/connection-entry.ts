@@ -9,7 +9,7 @@ main{width:min(420px,calc(100vw - 32px));background:var(--card);border:1px solid
 h1{font-size:22px;margin:0 0 4px}header p{margin:0 0 20px;color:var(--muted);font-size:13px;word-break:break-all}
 .tabs{display:flex;gap:8px;margin-bottom:18px}.tabs button{flex:1;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px;font:inherit;cursor:pointer}
 .tabs button[aria-selected="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
-form{display:grid;gap:12px}label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+form{display:grid;gap:12px}form[hidden]{display:none}label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
 input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
 input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .row{display:flex;gap:8px}.row input{flex:1}.row button{white-space:nowrap}
