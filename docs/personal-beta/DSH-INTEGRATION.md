@@ -4,7 +4,7 @@
 > 新增或修改下列任何一处，**必须同步更新本文件**；提交时在 PR 描述里注明「本文件已更新」。
 >
 > 一句话结论：**我们没有修改、fork 或复制官方 DSH 源码**，只使用官方公开接缝（Profile patch、`ctx.llm.registerAdapter`、`ctx.slots`、preload 注入）和我们自己的包。
-> 但有 5 处「软依赖」（官方 DOM 结构 / 设置项版本常量），官方改版时不会报错、只会悄悄失效，必须靠第 6 节的检查清单回归。
+> 但有 6 处「软依赖」（官方 DOM 结构 / 设置项版本常量），官方改版时不会报错、只会悄悄失效，必须靠第 6 节的检查清单回归。
 
 - 锁定的官方版本：`upstream.json` → DSH `0.2.1-rc.5`（Host/Client/SDK 全部同一版本）
 - 对齐检查：`corepack yarn check:desktop-dsh-alignment`、`corepack yarn check:web-dsh-alignment`
@@ -49,10 +49,10 @@
 
 | 插槽 | 组件 / 注册点 | 用途 | 官方声明 |
 | --- | --- | --- | --- |
-| `sidebar.footer.action` | `AccountFooter`（`packages/bundle/src/client/components/AccountFooter.tsx`），`harness/client.ts` 注册 | 左下角账号/空间/积分入口 | `dsh-client-ui-sidebar`（list, root） |
+| `sidebar.footer.action` | `AccountFooter`（`packages/bundle/src/client/components/AccountFooter.tsx`），`harness/client.ts` 注册 | 左下角账号/空间/积分入口（与官方「更多」共同组成底栏两项） | `dsh-client-ui-sidebar`（list, root） |
 | `conversation.hero.brand.mark` | `HeroWelcome`（`.../components/HeroWelcome.tsx`） | 新会话欢迎语 + 云朵 logo | `dsh-client-ui-conversation`（single, root，owner props `{size, className}`） |
 | `sidebar.brand.mark` / `sidebar.brand.name` | `BrandMark` / `BrandName`（`.../components/Brand.tsx`，复用 `packages/ui/src/components/LogoMark.tsx`） | 侧栏品牌 logo 与名称 | `dsh-client-ui-sidebar` |
-| `shell.overlay` | `ShellAppearance`、`NavigationLocation` | 外观跟随、地址栏视图同步 | `dsh-client-ui-renderer` / layout |
+| `shell.overlay` | `ShellAppearance`、`NavigationLocation` | 外观跟随、底栏顺序与菜单裁剪、地址栏视图同步 | `dsh-client-ui-renderer` / layout |
 | `main` | `workbench` 面板、诊断面板 | 工作台主区 | 官方 `main` |
 | `sidebar.panellist` | 企业协作面板、诊断面板 | 侧栏面板 | `dsh-client-ui-sidebar` |
 | `plugins.item` | 社区市场条目 | 插件市场 | `dsh-client-ui-plugin-manager` |
@@ -70,8 +70,9 @@
 | S3 | `local-runtime.ts` `acknowledgePreviewNotice()` | 用户层设置行 `id: ui-settings-general`、`config.welcomeNoticeVersion: 2026-09-28.1`（官方「预览版说明」弹窗版本号） | 新账号登录又弹「预览版说明」 | 新建账号登录后确认无弹窗；官方改版本号时把常量跟着更新 |
 | S4 | `packages/ui/src/components/LogoMark.tsx` | 官方 `sidebar.brand.mark` 只给尺寸/类名，不要求图形格式 | 品牌位退回官方鱼形 logo 或空白 | 看侧栏左上角是否为云朵图 |
 | S5 | `managed-bridge.ts` 的注入字段 | 我们的计费网关要求 `price_version` + `request_id`，且 `usage` 要回传 | 网关 400/409，聊天失败或积分不动 | 发一条消息，看 `/api/admin/platform/ledger` 有新 `USAGE` 行 |
+| S6 | `ShellAppearance.tsx` 的 effect 与 `<style>` | 官方底栏 `footerActions` 后紧跟 `settingsArea`；官方账号菜单是含 `aria-keyshortcuts="Control+Alt+,"`「设置」项的 `[role="menu"]`，另外两项文本为「意见反馈」「登录」；第三方 skillhub 在 footer action 内渲染 `.sh-plaza-wrap` | 左下角恢复三个入口或「更多」回到账号行下方；更多菜单重新出现「意见反馈」「登录」 | CDP：底栏自上而下只有「更多」和 `[data-testid="workdsh-account-footer"]`（无「插件广场」），打开账号菜单只剩「设置」 |
 
-> S1/S2 只用结构选择器，不用官方 hash 类名：官方改版时最坏情况是「多显示一行」，不会把布局弄崩。发现变化时应重新截图并更新本表。
+> S1/S2/S6 只用结构选择器，不用官方 hash 类名：官方改版时最坏情况是「多显示一行」，不会把布局弄崩。S6 另外依赖第三方 skillhub 的 `.sh-plaza-wrap` 类名和菜单项中文文案；skillhub 或官方菜单改版时按 S6 的回归方法重新截图并更新本表。
 
 ## 5. 本地账号桥（renderer 拿不到 token）
 
@@ -95,7 +96,7 @@
 5. 重新打包并安装 runtime：`node apps/desktop/scripts/pack-workdsh-profile.mjs apps/web apps/desktop/build/workdsh-profile-release`（同名目录存在会拒绝，先挪走旧目录）→ `prepare:workdsh-runtime` → `prepare:workdsh-primary-runtime` → `prepare:workdsh-command` → 桌面载体 `build`。
 6. 本地验收（CDP 脚本在 `tmp/`，已在 `.gitignore`）：
    - `verify-hero.mjs`：`[data-testid="workdsh-hero-welcome"]` 存在、文案正确、`body.innerText` 不含 `探索未至之境`/`预览版`
-   - 底栏：账号行与「插件广场」分两行、积分非 0、无截断
+   - 底栏：自上而下只有「更多」和账号行（无「插件广场」）；账号行积分非 0、无截断；打开「更多」只剩「设置」
    - 品牌位：侧栏左上角是云朵图
 7. 托管模型回归：模型选择器里有「三云 Buddy」组，发一句话、流式正常、后台 ledger 有 `USAGE` 行。
 8. 通过后再合并；不通过就先改回旧版本，**不要**改官方源码兜底。
