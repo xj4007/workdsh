@@ -1,42 +1,10 @@
 import * as React from 'react';
 
-type Summary = {
-  account: { displayName: string, email: string };
-  space: { id: string, name: string, kind: 'PERSONAL' | 'ENTERPRISE' };
-  spaces: Array<{ id: string, name: string, kind: 'PERSONAL' | 'ENTERPRISE' }>;
-  wallet: { availableCredits: string, balanceCredits: string } | null;
-};
-
-declare global {
-  interface Window { __workdshAccountBridge?: { url: string, key: string } }
-}
-
-/** The Desktop carrier injects the loopback bridge; the query fallback serves older carriers. */
-export function accountBridge(): { url: string, key: string } | undefined {
-  const injected = window.__workdshAccountBridge;
-  if (injected?.url && injected.key) return injected;
-  const search = new URL(window.location.href).searchParams;
-  const url = search.get('workdshAccountUrl');
-  const key = search.get('workdshAccountKey');
-  return url && key ? { url, key } : undefined;
-}
-
-async function call(path: string, method = 'GET', body?: unknown): Promise<Summary> {
-  const endpoint = accountBridge();
-  if (!endpoint) throw new Error('账户桥接未就绪');
-  const response = await fetch(`${endpoint.url}${path}`, {
-    method,
-    headers: { Authorization: `Bearer ${endpoint.key}`, ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
-    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-  });
-  if (!response.ok) throw new Error(`账户暂不可用（${response.status}）`);
-  return await response.json() as Summary;
-}
+import { accountCall as call, useAccountSummary, type AccountSummary as Summary } from '../account.js';
 
 /** Footer action beside Settings: account, current space and available credits. */
 export function AccountFooter({ wide }: { wide: boolean }) {
-  const [summary, setSummary] = React.useState<Summary>();
-  const [error, setError] = React.useState<string>();
+  const { summary, error, setError, refresh } = useAccountSummary();
   const [open, setOpen] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const root = React.useRef<HTMLDivElement | null>(null);
@@ -49,21 +17,6 @@ export function AccountFooter({ wide }: { wide: boolean }) {
     row.style.flexWrap = 'wrap';
     return () => { row.style.flexWrap = ''; };
   }, []);
-
-  const refresh = React.useCallback(async () => {
-    try {
-      setSummary(await call('/account'));
-      setError(undefined);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : '账户暂不可用');
-    }
-  }, []);
-
-  React.useEffect(() => {
-    void refresh();
-    const timer = window.setInterval(() => { void refresh(); }, 5_000);
-    return () => window.clearInterval(timer);
-  }, [refresh]);
 
   const wallet = summary?.wallet;
   // The footer row also hosts the plugin-market action, so only the space and the credits stay inline.

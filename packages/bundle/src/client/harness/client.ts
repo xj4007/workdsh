@@ -15,7 +15,10 @@ import { BrandMark, BrandName, DiagnosticsMark } from '../components/Brand.js';
 import { DiagnosticsPanel, type Inventory } from '../components/DiagnosticsPanel.js';
 import { NavigationLocation } from '../components/NavigationLocation.js';
 import { AgentBrowserPage, agentBrowserKind, readAgentBrowserFrame } from '../components/AgentBrowserPage.js';
-import { AccountFooter, accountBridge } from '../components/AccountFooter.js';
+import type {} from '@deepseek-ai/dsh-client-ui-conversation/client';
+import { AccountFooter } from '../components/AccountFooter.js';
+import { HeroWelcome } from '../components/HeroWelcome.js';
+import { accountBridge } from '../account.js';
 
 declare module '@deepseek-ai/cordis' {
   interface Context { market: MarketHost; }
@@ -110,6 +113,10 @@ export function apply(ctx: Context): void {
     ctx.slots.inject('sidebar.footer.action', () => ctx.slots.register({
       name: 'sidebar.footer.action', id: 'workdsh-account',
     }, AccountFooter));
+    // The shipped hero offers no slot for its headline text, so the greeting rides the brand mark slot.
+    ctx.slots.inject('conversation.hero.brand.mark', () => ctx.slots.register({
+      name: 'conversation.hero.brand.mark',
+    }, HeroWelcome));
   }
   const diagnostics = new URL(window.location.href).searchParams.get('diagnostics') === '1';
   const viewToPanel = diagnostics ? { ...productViews, diagnostics: 'workdsh-probe' } : productViews;
