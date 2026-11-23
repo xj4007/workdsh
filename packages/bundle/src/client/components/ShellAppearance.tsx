@@ -4,7 +4,8 @@ import * as React from 'react';
 export function ShellAppearance() {
   // The product keeps exactly two footer entries: the official "More" launcher above the account
   // row. The pinned slots expose no sibling ordering and skillhub registers its own footer action,
-  // so the footer order/visibility is a DOM seam; the account menu has no item filter either.
+  // so the footer order/visibility is a DOM seam; the account menu has no item filter either, so
+  // the plaza entry is cloned into it.
   React.useEffect(() => {
     const ensurePlazaItem = (menu: HTMLElement): void => {
       if (menu.querySelector('[data-workdsh-plaza-item]')) return;
@@ -15,7 +16,7 @@ export function ShellAppearance() {
       const feedback = [...menu.querySelectorAll<HTMLElement>('[role="menuitem"]')]
         .find((item) => item.textContent?.trim() === '意见反馈');
       const template = feedback?.parentElement ?? settings?.parentElement;
-      if (!plazaTrigger || !plazaIcon || !viewport || !template) return;
+      if (!plazaTrigger || !plazaIcon || !viewport || !template || template === menu) return;
 
       const item = template.cloneNode(true) as HTMLElement;
       item.removeAttribute('style');
