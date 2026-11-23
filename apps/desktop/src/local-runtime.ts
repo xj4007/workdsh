@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 import { load, dump } from 'js-yaml'
 import { syncBundledCompatibility } from './runtime-compatibility.ts'
 import { cachedPackageManager } from './plugin-archive-cache.ts'
-import { enterpriseNamespace } from './connection-mode.ts'
+import { accountNamespace, enterpriseNamespace } from './connection-mode.ts'
 import type { EnterpriseMember, Authority } from './enterprise-auth.ts'
 
 type ProfilePackage = { dependencies?: Record<string, string>, optionalDependencies?: Record<string, string>, dsh?: { profile?: { bundles?: string[] } }, [key: string]: unknown }
@@ -134,6 +134,13 @@ export function enterpriseSpace(userData: string, backend: string, actor: Enterp
   if (typeof deviceId !== 'string' || !/^[0-9a-f-]{36}$/u.test(deviceId)) throw new Error('企业本机设备记录无效')
   for (const name of ['home', 'dsh', 'agents', 'workspace', 'tmp', 'appdata', 'localappdata']) mkdirSync(join(root, name), { recursive: true, mode: 0o700 })
   return { root, home: join(root, 'dsh'), deviceId }
+}
+
+/** One writable Home per account space. The legacy userData/dsh-home is never reused or migrated implicitly. */
+export function personalSpace(userData: string, accountId: string, spaceId: string): { root: string, home: string } {
+  const root = join(userData, 'accounts', accountNamespace(accountId, spaceId))
+  for (const name of ['home', 'dsh', 'agents', 'workspace', 'tmp', 'appdata', 'localappdata']) mkdirSync(join(root, name), { recursive: true, mode: 0o700 })
+  return { root, home: join(root, 'dsh') }
 }
 
 export function enterpriseEnvironment(root: string, executable: string, parent: NodeJS.ProcessEnv): NodeJS.ProcessEnv {

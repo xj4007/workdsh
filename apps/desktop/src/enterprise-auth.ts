@@ -62,6 +62,16 @@ export class EnterpriseLogin {
       throw error
     }
   }
+
+  /** Adopt the platform account token already issued for an enterprise space; no password crosses this path. */
+  static async fromSession(origin: string, token: string, request: typeof fetch = fetch): Promise<EnterpriseLogin> {
+    const backend = enterpriseConnection(origin).portalOrigin
+    if (!/^[A-Za-z0-9_-]{32,256}$/u.test(token)) throw new Error('企业空间令牌无效')
+    const verified = await request(`${backend}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` }, redirect: 'error', signal: AbortSignal.timeout(10_000) })
+      .catch(() => { throw new Error('无法核验企业空间账号') })
+    if (!verified.ok) throw new Error(verified.status === 401 ? '企业空间授权已失效' : `企业空间核验失败 (${verified.status})`)
+    return new EnterpriseLogin(backend, token, member(await verified.json()), request)
+  }
   async request(path: string, method = 'GET', body?: string): Promise<Response> {
     if (!this.#token) throw new Error('企业登录已退出')
     this.#lifetime.signal.throwIfAborted()

@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, expect, it } from 'vitest'
-import { desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher } from '../src/local-runtime.ts'
+import { desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher, personalSpace } from '../src/local-runtime.ts'
 
 const roots: string[] = []
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
@@ -57,6 +57,24 @@ it('isolates account/backend directories, device records and credential/skill en
   expect(readFileSync(bridge.patch, 'utf8')).not.toContain('id: workdsh-identity-enterprise\n  disabled: true')
   expect(readFileSync(bridge.patch, 'utf8')).not.toContain('capability')
   expect(JSON.parse(readFileSync(bridge.authFile, 'utf8')).principalId).toBe('A')
+})
+it('isolates personal account spaces and never reuses the legacy dsh-home', () => {
+  const { root } = fixture()
+  const a = personalSpace(root, 'acc-1', 'space-1')
+  expect(a.root.startsWith(join(root, 'accounts'))).toBe(true)
+  expect(personalSpace(root, 'acc-1', 'space-1').root).toBe(a.root)
+  expect(personalSpace(root, 'acc-1', 'space-2').root).not.toBe(a.root)
+  expect(personalSpace(root, 'acc-2', 'space-1').root).not.toBe(a.root)
+  const actor = { id: 'A', organizationId: 'org', organizationName: 'Company', email: 'a@test', displayName: 'A', role: 'MEMBER' as const, mustChangePassword: false }
+  expect(enterpriseSpace(root, 'https://company.test', actor).root).not.toBe(a.root)
+  const env = enterpriseEnvironment(a.root, '/runtime/node', { PATH: '/usr/bin' })
+  expect(env.DSH_HOME).toBe(a.home)
+  expect(env.HOME).toBe(join(a.root, 'home'))
+  mkdirSync(join(root, 'dsh-home'), { recursive: true })
+  writeFileSync(join(root, 'dsh-home', 'marker'), 'legacy')
+  expect(personalSpace(root, 'acc-3', 'space-1').root.startsWith(join(root, 'accounts'))).toBe(true)
+  expect(readFileSync(join(root, 'dsh-home', 'marker'), 'utf8')).toBe('legacy')
+  expect(existsSync(join(root, 'dsh-home', 'profiles'))).toBe(false)
 })
 it('delegates startup and plugin installation to official runCli using one packaged Node and pnpm', () => {
   const { source, home } = fixture(); materializeRuntimeProfile(source, home)

@@ -12,11 +12,13 @@ import {
 } from 'node:fs'
 import { isAbsolute, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { connectionEntryHtml, enterpriseLoginHtml, connectionLoadingHtml } from './connection-entry.ts'
-import { connectionPartition, enterpriseConnection, type DesktopConnection } from './connection-mode.ts'
-import { parseDeploymentConfig } from './deployment-config.ts'
+import { AccountClient, type AccountInfo, type AccountSpace, type LoginResult } from './account-client.ts'
+import { connectionEntryHtml, spacePickerHtml, connectionLoadingHtml } from './connection-entry.ts'
+import { connectionPartition, type DesktopConnection } from './connection-mode.ts'
+import { parseDeploymentConfig, serviceOrigin as resolveServiceOrigin } from './deployment-config.ts'
 import { EnterpriseLogin, startEnterpriseAuthority, type Authority } from './enterprise-auth.ts'
-import { desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher } from './local-runtime.ts'
+import { personalSpace, desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher } from './local-runtime.ts'
+import { startManagedBridge, type AccountSummary, type ManagedBridge } from './managed-bridge.ts'
 import { manageCommand } from './command-management.ts'
 import { createRuntimeOutputRedactor, redactRuntimeOutput, runtimeFailureDetail, runtimeFailureLog } from './runtime-diagnostics.ts'
 import { cleanOwnedProcessTree, stopOwnedProcess, trackOwnedProcess } from './owned-process.ts'
@@ -25,6 +27,16 @@ import { runOfficialCommand } from './official-command.ts'
 
 const PROFILE_NAME = 'workdsh'
 const READY_PATTERN = /dsh web:\s+(http:\/\/127\.0\.0\.1:\d+\/?\?token=[^\s]+)/u
+
+type ActiveAccount = {
+  client: AccountClient
+  token: string
+  account: AccountInfo
+  space: AccountSpace
+  spaces: AccountSpace[]
+  root?: string
+  home?: string
+}
 
 let runtime: ChildProcess | undefined
 let runtimeStarting = false
@@ -35,10 +47,11 @@ let quitRequested = false
 let returnRequested = false
 let installer: ChildProcess | undefined
 const enterpriseWindows = new Set<BrowserWindow>()
-let enterprisePortal = process.env.WORKDSH_ENTERPRISE_PORTAL ?? ''
-let managedBackend: string | undefined
+let accountOrigin = 'https://sanyunbuddy.sycjlht.com'
+let accountSession: ActiveAccount | undefined
+let accountBridge: ManagedBridge | undefined
+let pendingLogin: { client: AccountClient, result: LoginResult } | undefined
 let entrySurface = false
-let pendingConnection: ReturnType<typeof enterpriseConnection> | undefined
 let enterprise: { login: EnterpriseLogin, root: string, home: string, deviceId: string, authority?: Authority, authFile?: string } | undefined
 let verifyTimer: ReturnType<typeof setInterval> | undefined
 let verifying = false
@@ -116,6 +129,12 @@ function startBrowserWorker(request: { port: number, profile: string }): void {
   })
 }
 
+function accountBridgeUrl(url: string): string {
+  if (!accountBridge) return url
+  const query = new URLSearchParams({ workdshAccountUrl: accountBridge.url, workdshAccountKey: accountBridge.key })
+  return `${url}${url.includes('?') ? '&' : '?'}${query.toString()}`
+}
+
 function openWindow(url: string, connection: DesktopConnection = { mode: 'personal' }, carrier = false): void {
   const previous = window
   const previousEntrySurface = entrySurface
@@ -154,7 +173,6 @@ function openWindow(url: string, connection: DesktopConnection = { mode: 'person
     page.webContents.on('will-navigate', (event, target) => {
       if (target === 'workdsh://entry' && window === page && !switching) {
         event.preventDefault()
-        if (!enterprisePluginAvailable()) { dialog.showErrorBox('企业插件不可用', '请先安装兼容的企业账号插件。'); return }
         void returnToEntry()
         return
       }
@@ -162,28 +180,43 @@ function openWindow(url: string, connection: DesktopConnection = { mode: 'person
       event.preventDefault()
     })
   }
-  void page.loadURL(url).then(() => {
+  void page.loadURL(accountBridgeUrl(url)).then(() => {
     if (page.isDestroyed()) return
     page.show()
     if (previous && !previous.isDestroyed()) previous.destroy()
   }).catch(() => {
     if (!page.isDestroyed()) page.destroy()
     if (previous && !previous.isDestroyed()) { window = previous; entrySurface = previousEntrySurface }
-    dialog.showErrorBox('无法打开工作区', '请检查企业地址、网络或本地运行状态。')
+    dialog.showErrorBox('无法打开工作区', '请检查服务地址、网络或本地运行状态。')
     if (runtime) void returnToEntry()
   })
   page.on('closed', () => { enterpriseWindows.delete(page); if (window === page) window = undefined })
 }
 
+/** Personal account spaces and enterprise spaces both receive an isolated home, environment and credential store. */
+function isolationRoot(): string | undefined {
+  return enterprise?.root ?? accountSession?.root
+}
+
 function runtimeEnvironment(home: string): NodeJS.ProcessEnv {
+  const root = isolationRoot()
   return {
-    ...(enterprise ? enterpriseEnvironment(enterprise.root, bundledNodeExecutable(), process.env) : process.env),
+    ...(root ? enterpriseEnvironment(root, bundledNodeExecutable(), process.env) : process.env),
     DSH_HOME: home,
-    DSH_AGENTS_HOME: enterprise ? join(enterprise.root, 'agents') : join(home, 'agents'),
+    DSH_AGENTS_HOME: root ? join(root, 'agents') : join(home, 'agents'),
     DSH_BUNDLED_PRIMARY_RUNTIME: bundledPrimaryRuntime(),
     DSH_ELECTRON_EXECUTABLE: process.execPath,
     WORKDSH_ELECTRON_APP: app.isPackaged ? undefined : app.getAppPath(),
     ELECTRON_RUN_AS_NODE: undefined,
+    ...(accountBridge ? {
+      WORKDSH_MANAGED_PROVIDER_URL: accountBridge.url,
+      WORKDSH_MANAGED_PROVIDER_KEY: accountBridge.key,
+      WORKDSH_MANAGED_PROVIDER_MODELS: JSON.stringify(accountBridge.models.map(model => ({
+        id: model.id,
+        name: model.displayName,
+        ...(model.contextTokens === undefined ? {} : { contextWindow: model.contextTokens }),
+      }))),
+    } : {}),
   }
 }
 
@@ -213,7 +246,9 @@ async function prepareProfile(home: string): Promise<{ profile: string, existing
 }
 
 function rememberCommandSpace(home?: string): void {
-  const active = home ? { mode: enterprise ? 'enterprise' : 'personal', home, ...(enterprise ? { root: enterprise.root } : {}), label: enterprise ? `${enterprise.login.actor.organizationName ?? '企业'} / ${enterprise.login.actor.displayName}` : '个人工作区' } : undefined
+  const label = enterprise ? `${enterprise.login.actor.organizationName ?? '企业'} / ${enterprise.login.actor.displayName}` : accountSession ? `${accountSession.account.displayName} / ${accountSession.space.name}` : '个人工作区'
+  const root = enterprise?.root ?? accountSession?.root
+  const active = home ? { mode: enterprise ? 'enterprise' : 'personal', home, ...(root ? { root } : {}), label } : undefined
   mkdirSync(app.getPath('userData'), { recursive: true })
   writeFileSync(join(app.getPath('userData'), 'command-context.json'), JSON.stringify({ personalHome: runtimeHome(), active }), { mode: 0o600 })
 }
@@ -231,7 +266,7 @@ async function startRuntime(home: string, connection: DesktopConnection, patches
   const startedAt = Date.now()
   const child = spawn(executable, [launcher, '--no-open'], {
     env: runtimeEnvironment(home),
-    cwd: enterprise ? join(enterprise.root, 'workspace') : home,
+    cwd: isolationRoot() ? join(isolationRoot()!, 'workspace') : home,
     detached: process.platform !== 'win32',
     stdio: ['ignore', 'pipe', 'pipe'],
     windowsHide: true,
@@ -305,27 +340,40 @@ async function leaveWorkspace(): Promise<void> {
   const page = window
   if (verifyTimer) { clearInterval(verifyTimer); verifyTimer = undefined }
   const session = enterprise
-  // Shut admission before waiting for any graceful process exit.
+  const account = accountSession
+  const bridge = accountBridge
+  accountBridge = undefined
+  // Stop the Host's capability before waiting for any graceful process exit.
+  await bridge?.close()
   await session?.authority?.close()
   session?.login.cancelRequests()
   const child = runtime
   if (child) { await stopOwnedProcess(child); if (runtime === child) { runtime = undefined; runtimeStarting = false } }
   enterprise = undefined
+  accountSession = undefined
+  pendingLogin = undefined
   rememberCommandSpace()
   if (session) {
     if (session.authFile) rmSync(session.authFile, { force: true })
     const revoked = await session.login.logout()
     if (!revoked) dialog.showErrorBox('本机已退出', '本机企业运行和登录已停止；后台连接失败，远端撤销尚未确认。')
-    if (page && !page.isDestroyed()) {
-      await page.webContents.session.closeAllConnections()
-      await page.webContents.session.clearStorageData()
-      await page.webContents.session.clearCache()
-    }
   }
-  for (const enterprisePage of [...enterpriseWindows]) if (!enterprisePage.isDestroyed()) enterprisePage.destroy()
+  if (account) {
+    const revoked = await account.client.logout(account.token)
+    if (!revoked) dialog.showErrorBox('本机已退出', '本机账户登录已停止；后台连接失败，远端撤销尚未确认。')
+  }
+  const pages = new Set<BrowserWindow>()
+  if (page && !page.isDestroyed()) pages.add(page)
+  for (const enterprisePage of enterpriseWindows) if (!enterprisePage.isDestroyed()) pages.add(enterprisePage)
+  for (const item of pages) {
+    await item.webContents.session.closeAllConnections()
+    await item.webContents.session.clearStorageData()
+    await item.webContents.session.clearCache()
+    if (!item.isDestroyed()) item.destroy()
+  }
   enterpriseWindows.clear()
   if (page && !page.isDestroyed()) page.destroy()
-  pendingConnection = undefined; entrySurface = false
+  entrySurface = false
 }
 
 async function returnToEntry(): Promise<void> {
@@ -343,56 +391,106 @@ function endSwitch(): void {
   else if (returnRequested) { returnRequested = false; void returnToEntry() }
 }
 
-function savedBackendFile(): string { return join(app.getPath('userData'), 'enterprise-backend.json') }
-function rememberBackend(backend: string): void {
-  if (managedBackend) return
-  mkdirSync(app.getPath('userData'), { recursive: true })
-  writeFileSync(savedBackendFile(), JSON.stringify({ backend }), { mode: 0o600 })
-}
-
 function showConnectionEntry(): void {
-  openWindow('data:text/html;charset=utf-8,' + encodeURIComponent(connectionEntryHtml(enterprisePortal, managedBackend !== undefined, enterprisePluginAvailable())), { mode: 'personal' }, true)
-  connectEntryNavigation(window!)
+  openWindow('data:text/html;charset=utf-8,' + encodeURIComponent(connectionEntryHtml(accountOrigin)), { mode: 'personal' }, true)
 }
 
-function connectEntryNavigation(entry: BrowserWindow): void {
-  entry.webContents.on('will-navigate', (event, target) => {
-    event.preventDefault()
-    if (switching || window !== entry || !entrySurface) return
-    void (async () => {
-      switching = true
-      try {
-        const command = new URL(target)
-        if (command.protocol !== 'workdsh:') return
-        if (command.hostname === 'enterprise') {
-          if (enterprise) throw new Error('请先退出当前企业账号再修改后台地址')
-          const connection = enterpriseConnection(managedBackend ?? command.searchParams.get('portal') ?? '')
-          pendingConnection = connection
-          enterprisePortal = connection.portalOrigin
-          rememberBackend(enterprisePortal)
-          openWindow('data:text/html;charset=utf-8,' + encodeURIComponent(enterpriseLoginHtml(enterprisePortal)), { mode: 'personal' }, true)
-          connectEntryNavigation(window!)
-        } else if (command.hostname === 'personal') {
-          if (enterprise) await leaveWorkspace()
-          const home = runtimeHome()
-          await entry.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(connectionLoadingHtml('正在启动个人工作区')))
-          const prepared = await prepareProfile(home)
-          entrySurface = false
-          await startRuntime(home, { mode: 'personal' }, [], prepared.existingHome)
-        } else if (command.hostname === 'entry') {
-          await leaveWorkspace(); showConnectionEntry()
-        }
-      } catch (error) {
-        dialog.showErrorBox('无法进入', error instanceof Error ? error.message : '请检查入口配置')
-        showConnectionEntry()
-      } finally { endSwitch() }
-    })()
+function summaryOf(session: ActiveAccount, wallet: AccountSummary['wallet']): AccountSummary {
+  return {
+    account: { displayName: session.account.displayName, email: session.account.email },
+    space: { id: session.space.id, name: session.space.name, kind: session.space.kind },
+    spaces: session.spaces.map(space => ({ id: space.id, name: space.name, kind: space.kind })),
+    wallet,
+  }
+}
+
+async function accountSummary(): Promise<AccountSummary> {
+  const session = accountSession
+  if (!session) throw new Error('尚未登录')
+  let value: AccountSummary['wallet'] = null
+  try {
+    const wallet = await session.client.wallet(session.token)
+    value = { availableCredits: wallet.availableCredits, balanceCredits: wallet.balanceCredits }
+  } catch { /* the sidebar shows 暂不可用; it never invents a zero balance */ }
+  return summaryOf(session, value)
+}
+
+async function refreshAccount(): Promise<AccountSummary> {
+  const session = accountSession
+  if (!session) throw new Error('尚未登录')
+  const me = await session.client.me(session.token)
+  session.account = me.account
+  session.space = me.space
+  if (me.spaces.length > 0) session.spaces = me.spaces
+  return accountSummary()
+}
+
+async function switchAccountSpace(spaceId: string): Promise<void> {
+  const session = accountSession
+  if (!session) throw new Error('尚未登录')
+  if (spaceId === session.space.id) return
+  // Issue the target token first so the old session can still authorize the switch.
+  const next = await session.client.switchSpace(session.token, spaceId)
+  if (switching) throw new Error('正在切换，请稍候')
+  switching = true
+  try {
+    await leaveWorkspace()
+    await launchAccount({ client: session.client, result: next })
+  } catch (error) {
+    await session.client.logout(next.token)
+    showConnectionEntry()
+    throw error
+  } finally { endSwitch() }
+}
+
+function makeActive(client: AccountClient, result: LoginResult): ActiveAccount {
+  return { client, token: result.token, account: result.account, space: result.space, spaces: result.spaces }
+}
+
+async function launchAccount(input: { client: AccountClient, result: LoginResult }): Promise<void> {
+  const session = makeActive(input.client, input.result)
+  accountSession = session
+  if (session.space.kind === 'ENTERPRISE') {
+    await launchEnterpriseSpace(session)
+    return
+  }
+  const space = personalSpace(app.getPath('userData'), session.account.id, session.space.id)
+  session.root = space.root
+  session.home = space.home
+  const prepared = await prepareProfile(space.home)
+  const models = await session.client.models(session.token).catch(() => [])
+  accountBridge = await startManagedBridge({
+    origin: accountOrigin, token: session.token, models,
+    account: accountSummary, refreshAccount, switchSpace: switchAccountSpace,
+    logout: () => { void returnToEntry() },
   })
+  await startRuntime(space.home, { mode: 'personal', accountId: session.account.id, spaceId: session.space.id }, [], prepared.existingHome)
 }
 
-function enterprisePluginAvailable():boolean {
- try{return installedEnterprisePlugins(join(runtimeHome(),'profiles',PROFILE_NAME),JSON.parse(readFileSync(join(bundledProfileDirectory(),'node_modules','@deepseek-ai','dsh','package.json'),'utf8')).version).includes('workdsh-provider-identity-enterprise')}
- catch{return false}
+async function launchEnterpriseSpace(session: ActiveAccount): Promise<void> {
+  const login = await EnterpriseLogin.fromSession(accountOrigin, session.token)
+  const space = enterpriseSpace(app.getPath('userData'), accountOrigin, login.actor)
+  session.root = space.root
+  session.home = space.home
+  enterprise = { login, ...space }
+  const prepared = await prepareProfile(space.home)
+  accountBridge = await startManagedBridge({
+    origin: accountOrigin, token: session.token, models: [],
+    account: accountSummary, refreshAccount, switchSpace: switchAccountSpace,
+    logout: () => { void returnToEntry() },
+  })
+  await activateEnterprise(prepared.existingHome)
+}
+
+async function enterAccount(input: { client: AccountClient, result: LoginResult }): Promise<void> {
+  pendingLogin = undefined
+  await launchAccount(input)
+}
+
+async function chooseAccount(result: LoginResult, client: AccountClient): Promise<void> {
+  if (result.spaces.length <= 1) { await enterAccount({ client, result }); return }
+  openWindow('data:text/html;charset=utf-8,' + encodeURIComponent(spacePickerHtml(result.account.displayName, result.spaces)), { mode: 'personal' }, true)
+  pendingLogin = { client, result }
 }
 
 async function activateEnterprise(existingHome: boolean): Promise<void> {
@@ -400,8 +498,8 @@ async function activateEnterprise(existingHome: boolean): Promise<void> {
   if (!session) throw new Error('请重新登录企业账号')
   await session.login.verify()
   if (quitRequested) throw new Error('启动已取消')
-  const pluginNames=await composeInstalledEnterprisePlugins(join(runtimeHome(),'profiles',PROFILE_NAME),join(session.home,'profiles',PROFILE_NAME),JSON.parse(readFileSync(join(bundledProfileDirectory(),'node_modules','@deepseek-ai','dsh','package.json'),'utf8')).version,bundledNodeExecutable(),join(bundledPrimaryRuntime(),'dependencies','pnpm','bin','pnpm.cjs'))
-  if(quitRequested||enterprise!==session)throw new Error('企业启动已取消')
+  const pluginNames = await composeInstalledEnterprisePlugins(join(runtimeHome(), 'profiles', PROFILE_NAME), join(session.home, 'profiles', PROFILE_NAME), JSON.parse(readFileSync(join(bundledProfileDirectory(), 'node_modules', '@deepseek-ai', 'dsh', 'package.json'), 'utf8')).version, bundledNodeExecutable(), join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'))
+  if (quitRequested || enterprise !== session) throw new Error('企业启动已取消')
   const manifest = join(session.home, 'profiles', PROFILE_NAME, 'package.json')
   const selected = JSON.parse(readFileSync(manifest, 'utf8')) as { dsh?: { profile?: { bundles?: string[] } } }
   selected.dsh ??= {}; selected.dsh.profile ??= {}; selected.dsh.profile.bundles ??= []
@@ -413,7 +511,6 @@ async function activateEnterprise(existingHome: boolean): Promise<void> {
   }
   writeFileSync(manifest, JSON.stringify(selected, null, 2) + '\n', { mode: 0o600 })
   session.authority = await startEnterpriseAuthority(session.login, session.deviceId, () => { void returnToEntry() }, () => { void returnToEntry() })
-  // Record before writing either file, so a partial patch failure is also cleaned.
   session.authFile = join(session.home, 'enterprise-auth.json')
   const patch = desktopEnterprisePatch(session.home, session.authority, session.login.actor, session.login.backendUrl, session.deviceId, pluginNames.includes('workdsh-plugin-enterprise-collaboration'))
   session.authFile = patch.authFile
@@ -424,9 +521,9 @@ async function activateEnterprise(existingHome: boolean): Promise<void> {
   verifyTimer = setInterval(() => {
     if (verifying || switching) return
     verifying = true
-    void session.login.verify().then(()=>{
-      const current=installedEnterprisePlugins(join(runtimeHome(),'profiles',PROFILE_NAME),JSON.parse(readFileSync(join(bundledProfileDirectory(),'node_modules','@deepseek-ai','dsh','package.json'),'utf8')).version)
-      if(pluginNames.some(name=>!current.includes(name)))throw new Error('企业插件已卸载，请重新安装后登录')
+    void session.login.verify().then(() => {
+      const current = installedEnterprisePlugins(join(runtimeHome(), 'profiles', PROFILE_NAME), JSON.parse(readFileSync(join(bundledProfileDirectory(), 'node_modules', '@deepseek-ai', 'dsh', 'package.json'), 'utf8')).version)
+      if (pluginNames.some(name => !current.includes(name))) throw new Error('企业插件已卸载，请重新安装后登录')
     }).catch(() => {
       dialog.showErrorBox('企业认证不可用', '企业账号已过期、被撤销、后台不可达或企业插件已卸载。本机企业运行将停止，请检查后重新登录。')
       void returnToEntry()
@@ -434,26 +531,67 @@ async function activateEnterprise(existingHome: boolean): Promise<void> {
   }, 30_000)
 }
 
-function installLoginHandlers(): void {
-  ipcMain.handle('workdsh:enterprise-login', async (event, input: unknown) => {
-    if (!entrySurface || event.sender !== window?.webContents || switching || !pendingConnection || enterprise) return { error: '此页面不能发起企业登录' }
-    switching = true
-    let admittedLogin: EnterpriseLogin | undefined
+function installAccountHandlers(): void {
+  const guard = (event: Electron.IpcMainInvokeEvent): { error: string } | undefined => {
+    if (!entrySurface || event.sender !== window?.webContents || switching) return { error: '此页面不能发起账户操作' }
+    return undefined
+  }
+
+  ipcMain.handle('workdsh:account-request-code', async (event, input: unknown) => {
+    const denied = guard(event); if (denied) return denied
+    const value = input as { email?: unknown }
+    if (!value || typeof value.email !== 'string' || value.email.length > 254) return { error: '请输入邮箱' }
     try {
-      const value = input as { account?: unknown, password?: unknown }
-      if (!value || typeof value.account !== 'string' || typeof value.password !== 'string') throw new Error('请输入账号和密码')
-      const login = await EnterpriseLogin.login(pendingConnection.portalOrigin, value.account, value.password)
-      admittedLogin = login
-      const space = enterpriseSpace(app.getPath('userData'), login.backendUrl, login.actor)
-      enterprise = { login, ...space }
-      const prepared = await prepareProfile(space.home)
-      await activateEnterprise(prepared.existingHome)
+      const result = await new AccountClient(accountOrigin).requestCode(value.email.trim())
+      return { ...(result.expiresAt ? { expiresAt: result.expiresAt } : {}), ...(result.code ? { code: result.code } : {}) }
+    } catch (error) { return { error: error instanceof Error ? error.message : '验证码发送失败' } }
+  })
+
+  ipcMain.handle('workdsh:account-login', async (event, input: unknown) => {
+    const denied = guard(event); if (denied) return denied
+    switching = true
+    try {
+      const value = input as { email?: unknown, password?: unknown }
+      if (!value || typeof value.email !== 'string' || typeof value.password !== 'string') throw new Error('请输入邮箱和密码')
+      const client = new AccountClient(accountOrigin)
+      const result = await client.login(value.email.trim(), value.password)
+      await chooseAccount(result, client)
       return {}
     } catch (error) {
-      const message = error instanceof Error ? error.message : '企业登录失败'
-      if (enterprise) { await leaveWorkspace(); showConnectionEntry(); dialog.showErrorBox('无法进入企业', message) }
-      else if (admittedLogin && !await admittedLogin.logout()) dialog.showErrorBox('企业启动未完成', '本机未进入企业运行；后台连接失败，远端登录撤销尚未确认。')
-      return { error: message }
+      showConnectionEntry()
+      return { error: error instanceof Error ? error.message : '登录失败' }
+    } finally { endSwitch() }
+  })
+
+  ipcMain.handle('workdsh:account-register', async (event, input: unknown) => {
+    const denied = guard(event); if (denied) return denied
+    switching = true
+    try {
+      const value = input as { email?: unknown, code?: unknown, password?: unknown, displayName?: unknown }
+      if (!value || typeof value.email !== 'string' || typeof value.code !== 'string' || typeof value.password !== 'string') throw new Error('请填写邮箱、验证码和密码')
+      const client = new AccountClient(accountOrigin)
+      const result = await client.register({ email: value.email.trim(), code: value.code.trim(), password: value.password, ...(typeof value.displayName === 'string' && value.displayName.trim() ? { displayName: value.displayName.trim() } : {}) })
+      await chooseAccount(result, client)
+      return {}
+    } catch (error) {
+      showConnectionEntry()
+      return { error: error instanceof Error ? error.message : '注册失败' }
+    } finally { endSwitch() }
+  })
+
+  ipcMain.handle('workdsh:account-space', async (event, input: unknown) => {
+    const denied = guard(event); if (denied) return denied
+    const pending = pendingLogin
+    const value = input as { spaceId?: unknown }
+    if (!pending || !value || typeof value.spaceId !== 'string') return { error: '空间选择已失效' }
+    switching = true
+    try {
+      const result = await pending.client.switchSpace(pending.result.token, value.spaceId)
+      await enterAccount({ client: pending.client, result })
+      return {}
+    } catch (error) {
+      showConnectionEntry()
+      return { error: error instanceof Error ? error.message : '无法进入该空间' }
     } finally { endSwitch() }
   })
 }
@@ -461,8 +599,8 @@ function installLoginHandlers(): void {
 function installConnectionMenu(): void {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
-    { label: '工作区', submenu: [{ label: '切换使用方式／退出企业', click: () => { void returnToEntry() } }] },
-    { label: '工具', submenu: [{ label: '终端命令 dsh（可选）…', click: () => { void manageCommand(join(process.resourcesPath, 'workdsh-runtime'), enterprise ? `${enterprise.login.actor.organizationName ?? '企业'} / ${enterprise.login.actor.displayName}` : '个人工作区') } }] },
+    { label: '账户', submenu: [{ label: '切换账户／空间', click: () => { void returnToEntry() } }] },
+    { label: '工具', submenu: [{ label: '终端命令 dsh（可选）…', click: () => { void manageCommand(join(process.resourcesPath, 'workdsh-runtime'), enterprise ? `${enterprise.login.actor.organizationName ?? '企业'} / ${enterprise.login.actor.displayName}` : accountSession ? `${accountSession.account.displayName} / ${accountSession.space.name}` : '个人工作区') } }] },
     { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
   ]))
 }
@@ -517,23 +655,24 @@ if (!app.requestSingleInstanceLock()) {
     // during that window must not relaunch and cancel the pending workspace.
     if (switching || runtimeStarting || installer || quitting || quitRequested) return
     if (window === undefined) {
-      // A healthy runtime always owns a window. Relaunching keeps the profile
-      // lifecycle simple after the last macOS window was closed.
       app.relaunch()
       app.quit()
     }
   })
   void app.whenReady().then(() => {
     const deploymentFile = join(process.resourcesPath ?? '', 'workdsh-config.json')
+    let deployment = {}
     if (existsSync(deploymentFile)) {
-      managedBackend = parseDeploymentConfig(JSON.parse(readFileSync(deploymentFile, 'utf8'))).enterprise?.backendUrl
-      if (managedBackend) enterprisePortal = managedBackend
+      try { deployment = parseDeploymentConfig(JSON.parse(readFileSync(deploymentFile, 'utf8'))) }
+      catch (cause) {
+        dialog.showErrorBox('部署配置错误', cause instanceof Error ? cause.message : '无法读取 workdsh-config.json')
+        app.quit()
+        return
+      }
     }
-    if (!enterprisePortal && existsSync(savedBackendFile())) {
-      try { enterprisePortal = enterpriseConnection(JSON.parse(readFileSync(savedBackendFile(), 'utf8')).backend).portalOrigin } catch { /* stale invalid preference is not trusted */ }
-    }
+    accountOrigin = resolveServiceOrigin(deployment)
     installConnectionMenu()
-    installLoginHandlers()
+    installAccountHandlers()
     showConnectionEntry()
   }).catch(cause => {
     process.stderr.write(`三云Buddy failed to start: ${cause instanceof Error ? cause.stack ?? cause.message : String(cause)}\n`)

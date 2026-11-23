@@ -46,3 +46,6 @@ apps/desktop/build/official-release-cache/
 
 # Local package archives are build outputs.
 /packages/plugins/*/*.tgz
+
+# Probe/scratch runs (gate runtime homes, credentials, logs) never ship.
+/tmp/

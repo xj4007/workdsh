@@ -1,23 +1,55 @@
-/** Carrier connection UI only; login and all product features remain in the Profile/server. */
-export function connectionEntryHtml(portal: string, managed: boolean = false, enterpriseAvailable = true): string {
-  const escaped = portal.replace(/[&<>"']/g, value => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[value]!)
-  return `<!doctype html><html lang="zh-CN"><meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; form-action workdsh:; base-uri 'none'">
-<meta name="viewport" content="width=device-width,initial-scale=1"><title>三云Buddy</title>
-<style>:root{color-scheme:light dark;--bg:#f5f7fa;--panel:#fff;--text:#171a20;--muted:#626b78;--border:#dce1e8}*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;display:grid;min-height:100vh;place-items:center}main{width:min(440px,calc(100vw - 48px));padding:32px;background:var(--panel);border:1px solid var(--border);border-radius:16px}header{font-size:22px;font-weight:600;margin-bottom:24px}header span{color:#2463eb}h1{font-size:22px;margin:0 0 8px}p{color:var(--muted);margin:0 0 20px}a,button{display:block;width:100%;text-align:center;border-radius:8px;padding:10px 16px;font:inherit;text-decoration:none;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer}button{background:#2463eb;color:white;border-color:#2463eb;margin-top:12px}form{margin-top:24px;padding-top:24px;border-top:1px solid var(--border)}label{display:block;margin-bottom:8px}input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel);color:var(--text);font:inherit}a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #80aaff;outline-offset:2px}@media(prefers-color-scheme:dark){:root{--bg:#121212;--panel:#202020;--text:#e7e7e7;--muted:#a5a5a5;--border:#414141}}</style>
-<main><header><span>W</span> 三云Buddy</header><h1>选择使用方式</h1><p>官方 DSH 在本机运行。个人与企业使用独立空间。</p><a href="workdsh://personal">个人使用</a><form action="workdsh://enterprise" method="get">${managed ? `<label>企业后台</label><p>${escaped}</p>` : `<label for="portal">企业后台地址</label><input id="portal" name="portal" type="url" required placeholder="https://企业地址" value="${escaped}" autocomplete="url">`}${enterpriseAvailable ? `<button type="submit">企业登录</button>` : `<button type="button" disabled>请先安装企业账号插件</button><p>进入个人空间，在插件管理中安装企业插件，再从工作区菜单切换到企业登录。</p>`}</form></main></html>`
+/** Carrier-owned entry pages. They render account controls only; credentials never enter the Host. */
+export type EntrySpace = { id: string, name: string, kind: 'PERSONAL' | 'ENTERPRISE' }
+
+const STYLE = `
+:root{color-scheme:light dark;--bg:#f6f7f9;--card:#fff;--ink:#16181d;--muted:#5f6673;--line:#dfe3ea;--accent:#2f6fed;--danger:#c0392b}
+@media(prefers-color-scheme:dark){:root{--bg:#111318;--card:#191c23;--ink:#eef1f6;--muted:#9aa3b2;--line:#2c313c;--accent:#7aa2ff;--danger:#ff8b80}}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{width:min(420px,calc(100vw - 32px));background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;box-shadow:0 18px 48px rgba(0,0,0,.08)}
+h1{font-size:22px;margin:0 0 4px}header p{margin:0 0 20px;color:var(--muted);font-size:13px;word-break:break-all}
+.tabs{display:flex;gap:8px;margin-bottom:18px}.tabs button{flex:1;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px;font:inherit;cursor:pointer}
+.tabs button[aria-selected="true"]{border-color:var(--accent);color:var(--accent);font-weight:600}
+form{display:grid;gap:12px}label{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px}.row input{flex:1}.row button{white-space:nowrap}
+button.primary{width:100%;padding:10px 12px;border:0;border-radius:10px;background:var(--accent);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+button.ghost{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px 10px;font:inherit;cursor:pointer}
+button:disabled{opacity:.55;cursor:progress}
+#status{min-height:20px;margin:14px 0 0;font-size:13px;color:var(--muted)}#status.error{color:var(--danger)}
+.spaces{display:grid;gap:10px}.spaces button{text-align:left;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:12px;padding:12px;font:inherit;cursor:pointer}
+.spaces button:hover{border-color:var(--accent)}.spaces small{display:block;color:var(--muted);font-size:12px}
+.loading{display:flex;align-items:center;gap:12px;color:var(--muted)}.spinner{width:20px;height:20px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spinner{animation:none}}
+`
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/gu, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!)
 }
 
-export function enterpriseLoginHtml(backend: string): string {
-  const base = connectionEntryHtml(backend)
-  const start = base.indexOf('<main>')
-  const escaped = backend.replace(/[&<>"']/g, value => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[value]!)
-  return base.slice(0, start).replace('form-action workdsh:', "form-action 'none'") + `<main><header><span>W</span> 三云Buddy</header><h1>登录企业 Desktop</h1><p>${escaped}</p><form id="enterprise-login"><label for="account">账号</label><input id="account" autocomplete="username" required maxlength="254"><label for="password" style="margin-top:16px">密码</label><input id="password" type="password" autocomplete="current-password" required maxlength="512"><button type="submit">登录并在本机运行</button></form><p id="status" role="status" style="margin-top:16px"></p><a href="workdsh://entry" style="margin-top:16px">返回使用方式</a></main></html>`
+function page(body: string, script = false): string {
+  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'; script-src ${script ? "'unsafe-inline'" : "'none'"}">
+<title>三云Buddy</title><style>${STYLE}</style></head><body>${body}</body></html>`
 }
 
-/** Trusted carrier loading surface; no remote content or credentials are embedded. */
+/** Account entry: service origin is fixed by the package and cannot be edited by the user. */
+export function connectionEntryHtml(serviceOrigin: string, registrationEnabled = true): string {
+  const origin = escapeHtml(serviceOrigin)
+  return page(`<main><header><h1>登录 三云Buddy</h1><p>服务地址：<span>${origin}</span></p></header>
+<div class="tabs" role="tablist"><button type="button" id="tab-login" role="tab" aria-selected="true">登录</button>${registrationEnabled ? '<button type="button" id="tab-register" role="tab" aria-selected="false">注册</button>' : ''}</div>
+<form id="account-login"><label>邮箱<input id="login-email" type="email" autocomplete="username" required></label><label>密码<input id="login-password" type="password" autocomplete="current-password" minlength="12" required></label><button class="primary" type="submit">登录</button></form>
+${registrationEnabled ? `<form id="account-register" hidden><label>邮箱<input id="register-email" type="email" autocomplete="email" required></label><label>验证码<div class="row"><input id="register-code" inputmode="numeric" autocomplete="one-time-code" required><button class="ghost" type="button" id="request-code">获取验证码</button></div></label><label>密码<input id="register-password" type="password" autocomplete="new-password" minlength="12" required></label><label>显示名称（可选）<input id="register-name" maxlength="120"></label><button class="primary" type="submit">注册并登录</button></form>` : ''}
+<p id="status" role="status" aria-live="polite"></p></main>`, true)
+}
+
+/** Space picker shown after login when the account has more than one space. */
+export function spacePickerHtml(displayName: string, spaces: readonly EntrySpace[]): string {
+  const rows = spaces.map(space => `<button type="button" data-space-id="${escapeHtml(space.id)}"><strong>${escapeHtml(space.name)}</strong><small>${space.kind === 'ENTERPRISE' ? '企业空间' : '个人空间'}</small></button>`).join('')
+  return page(`<main><header><h1>选择空间</h1><p>${escapeHtml(displayName)}</p></header><div class="spaces">${rows}</div><p id="status" role="status" aria-live="polite"></p></main>`)
+}
+
 export function connectionLoadingHtml(message: string): string {
-  const base = connectionEntryHtml('')
-  const escaped = message.replace(/[&<>"']/g, value => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[value]!)
-  return base.slice(0, base.indexOf('<main>')) + `<style>main{animation:appear .16s ease-out}.spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:#2463eb;border-radius:50%;animation:spin .8s linear infinite;margin:24px auto}@keyframes spin{to{transform:rotate(360deg)}}@keyframes appear{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){main,.spinner{animation:none}}</style><main aria-busy="true"><header><span>W</span> 三云Buddy</header><h1 role="status">${escaped}</h1><p>正在准备工作区并启动本机 DSH，请稍候。运行环境和内置插件已随安装包提供。</p><div class="spinner" aria-hidden="true"></div></main></html>`
+  return page(`<main><div class="loading" role="status" aria-busy="true"><span class="spinner" aria-hidden="true"></span><span>${escapeHtml(message)}</span></div></main>`)
 }

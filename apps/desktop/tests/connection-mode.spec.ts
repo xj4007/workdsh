@@ -20,4 +20,21 @@ describe('Desktop connection boundary', () => {
       expect(() => enterpriseConnection(value)).toThrow()
     }
   })
+  it('isolates browser storage per account space and refuses a half-bound account', () => {
+    const personal = { mode: 'personal' as const, accountId: 'acc-1', spaceId: 'space-1' }
+    expect(connectionPartition(personal)).toMatch(/^workdsh-account-[0-9a-f]{64}$/)
+    expect(connectionPartition(personal)).toBe(connectionPartition({ mode: 'personal', accountId: 'acc-1', spaceId: 'space-1' }))
+    expect(connectionPartition(personal)).not.toBe(connectionPartition({ mode: 'personal', accountId: 'acc-2', spaceId: 'space-1' }))
+    expect(connectionPartition(personal)).not.toBe(connectionPartition({ mode: 'personal', accountId: 'acc-1', spaceId: 'space-2' }))
+    expect(connectionPartition({ mode: 'personal' })).toBeUndefined()
+    expect(() => connectionPartition({ mode: 'personal', accountId: 'acc-1' })).toThrow('账户空间不完整')
+    expect(() => connectionPartition({ mode: 'personal', spaceId: 'space-1' })).toThrow('账户空间不完整')
+  })
+  it('separates enterprise spaces by principal and organization', () => {
+    const base = { mode: 'enterprise' as const, portalOrigin: 'https://company.test' }
+    expect(connectionPartition(base)).toMatch(/^workdsh-enterprise-[0-9a-f]{64}$/)
+    expect(connectionPartition(base)).toBe(connectionPartition({ mode: 'enterprise', portalOrigin: 'https://company.test/', organizationId: '', principalId: '' }))
+    expect(connectionPartition(base)).not.toBe(connectionPartition({ mode: 'enterprise', portalOrigin: 'https://company.test', principalId: 'm2' }))
+    expect(connectionPartition(base)).not.toBe(connectionPartition({ mode: 'enterprise', portalOrigin: 'https://company.test', organizationId: 'org2' }))
+  })
 })
