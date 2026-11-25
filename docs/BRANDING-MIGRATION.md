@@ -21,8 +21,8 @@
 
 | 保留项 | 原因 |
 | --- | --- |
-| Windows 可执行文件 `WorkDSH.exe`、安装标识 `io.techflag.dsh.ssh` | 这是[桌面清单](../apps/desktop/package.json)的 `win.executableName` 和 `appId`，不是快捷方式显示名称。[NSIS 安装脚本](../apps/desktop/build/installer.nsh)按 EXE 名关闭旧进程，安装器也需要识别已有安装。任务管理器或安装目录仍可能看到旧 EXE 名。这不影响以后换 Harness 版本。 |
-| 默认 Electron 用户数据目录中的 `WorkDSH` | [主进程](../apps/desktop/src/workdsh-main.ts)先显式指定旧数据目录，再设置新的显示名；优先保留绝对路径覆盖 `WORKDSH_DESKTOP_USER_DATA`。[命令行入口](../apps/desktop/src/command-cli.ts)也要继续查找同一位置。仅换目录名会让应用无法发现旧目录里的设置和运行状态。 |
+| 安装标识 `io.techflag.dsh.ssh` | 这是[桌面清单](../apps/desktop/package.json)的 `appId`，NSIS 安装/卸载与升级检测都按它识别已有安装；改动它会让老安装变成"另一个产品"。`win.executableName` 已于 2026-11-25 从 `WorkDSH` 改为 `SanyunBuddy`：任务管理器进程名与安装目录 EXE 均为 `SanyunBuddy.exe`，卸载器为 `Uninstall SanyunBuddy.exe`，[NSIS 安装脚本](../apps/desktop/build/installer.nsh)按当前 EXE 名关闭旧进程；从旧 `WorkDSH.exe` 时代 alpha 包升级时，新安装器通过注册表 `UninstallString` 找到旧卸载器先静默执行，由旧卸载器负责关闭旧进程和清理旧文件。这不影响以后换 Harness 版本。 |
+| 默认 Electron 用户数据目录中的 `WorkDSH` | [主进程](../apps/desktop/src/workdsh-main.ts)先显式指定旧数据目录，再设置新的显示名；优先保留绝对路径覆盖 `WORKDSH_DESKTOP_USER_DATA`。仅换目录名会让应用无法发现旧目录里的设置和运行状态。 |
 | `workdsh://`、`workdsh-*` 包和插件标识、`WORKDSH_*` 环境变量、`workdsh-config.json` | 这些是已有链接、依赖、配置和部署接口。只替换用户可见文案，不全局重命名。[WorkDSH Admin 的职责](../AGENTS.md#personal-and-enterprise-product-boundary)也不因本仓库改名而变化。 |
 | 历史 `WorkDSH-…` 安装包及下载地址 | 旧链接仍指向已经发布的旧二进制文件。不能只改链接末尾的文件名，否则无法下载。新版本发布后，再把下载入口指到已上传的新包。 |
 

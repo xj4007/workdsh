@@ -26,7 +26,7 @@ function fixture(version = '2.0.0'): {
   const unpacked = join(dist, 'win-unpacked')
   mkdirSync(unpacked, { recursive: true })
   const installer = join(dist, `SanyunBuddy-${version}-x64-Setup.exe`)
-  const application = join(unpacked, 'WorkDSH.exe')
+  const application = join(unpacked, 'SanyunBuddy.exe')
   writeFileSync(installer, portableExecutable())
   writeFileSync(application, portableExecutable())
   const runtime = join(unpacked, 'resources', 'workdsh-runtime', 'primary-runtime')

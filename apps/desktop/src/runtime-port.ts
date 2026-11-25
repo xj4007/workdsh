@@ -19,7 +19,7 @@ const codec = yaml as unknown as {
 const schema = codec.JSON_SCHEMA.extend(new codec.Type('tag:yaml.org,2002:js', {
   kind: 'scalar', construct: value => ({ __jsExpr: value }),
 }))
-export type RuntimePort = { managed: false } | { managed: true, host: string, port: number, patch: string }
+export type RuntimePort = { managed: false } | { managed: true, host: string, port: number, patch: string, movedFrom?: number }
 
 async function readOptional(file: string): Promise<string | undefined> {
   try { return await readFile(file, 'utf8') } catch (error) {
@@ -62,6 +62,14 @@ async function availablePort(port: number): Promise<number | undefined> {
   })
 }
 
+async function replacePort(state: string, port: number): Promise<void> {
+  const temporary = `${state}.${randomUUID()}`
+  try {
+    await writeFile(temporary, JSON.stringify({ version: 1, host: HOST, port }) + '\n', { flag: 'wx', mode: 0o600 })
+    await rename(temporary, state)
+  } finally { await rm(temporary, { force: true }) }
+}
+
 /** Existing Homes keep their origin; a conflicting owner is never stopped. */
 export async function prepareRuntimePort(home: string, userPatchFiles: string[], options: { preferredPort?: number, existingHome?: boolean } = {}): Promise<RuntimePort> {
   const preferredPort = options.preferredPort ?? 3080
@@ -72,15 +80,26 @@ export async function prepareRuntimePort(home: string, userPatchFiles: string[],
   await mkdir(home, { recursive: true, mode: 0o700 })
   const state = join(home, STATE_FILE)
   let port = await savedPort(state)
+  let movedFrom: number | undefined
   if (port !== undefined) {
-    if (await availablePort(port) === undefined) throw new Error(`此工作区原有地址 ${HOST}:${port} 正被占用。请先关闭占用该地址的应用后重试；为保留页面数据，本次未切换地址，也未停止其他进程。`)
+    // Another application may own this Home's origin, for example a Host that
+    // was left running or an unrelated development server. Starting beats
+    // freezing the workspace; only the old origin's browser preferences lapse.
+    if (await availablePort(port) === undefined) {
+      movedFrom = port
+      port = await availablePort(0)
+      if (port === undefined) throw new Error('无法为工作区分配本机端口，请稍后重试。')
+      await replacePort(state, port)
+    }
   } else {
     port = await availablePort(preferredPort)
-    // Before Home-owned records existed, this Desktop used 3080. Preserve
-    // that origin for an existing Profile instead of hiding its localStorage.
-    if (port === undefined && options.existingHome) throw new Error(`已有工作区原地址 ${HOST}:${preferredPort} 正被占用。为保留页面数据，本次未切换地址，也未停止其他进程；请关闭占用该地址的应用后重试。`)
-    port ??= await availablePort(0)
-    if (port === undefined) throw new Error('无法为工作区分配本机端口，请稍后重试。')
+    // Before Home-owned records existed, this Desktop used 3080. Try to keep
+    // that origin for an existing Profile, but never refuse to start.
+    if (port === undefined) {
+      port = await availablePort(0)
+      if (port === undefined) throw new Error('无法为工作区分配本机端口，请稍后重试。')
+      if (options.existingHome) movedFrom = preferredPort
+    }
     try {
       await writeFile(state, JSON.stringify({ version: 1, host: HOST, port }) + '\n', { flag: 'wx', mode: 0o600 })
     } catch (error) {
@@ -88,7 +107,13 @@ export async function prepareRuntimePort(home: string, userPatchFiles: string[],
       // Another launch created this Home's origin while we probed. Reuse that
       // record; never replace it with a second origin chosen concurrently.
       port = await savedPort(state)
-      if (port === undefined || await availablePort(port) === undefined) throw new Error('此工作区正在由另一个启动操作使用，请关闭重复窗口后重试。')
+      if (port === undefined) throw new Error('工作区端口记录无效，请核对本机配置；未更改原有访问地址。')
+      if (await availablePort(port) === undefined) {
+        movedFrom = port
+        port = await availablePort(0)
+        if (port === undefined) throw new Error('无法为工作区分配本机端口，请稍后重试。')
+        await replacePort(state, port)
+      }
     }
   }
   const patch = join(home, PATCH_FILE), temporary = `${patch}.${randomUUID()}`
@@ -96,7 +121,7 @@ export async function prepareRuntimePort(home: string, userPatchFiles: string[],
     await writeFile(temporary, codec.dump([{ id: 'webserver', config: { host: HOST, port } }]), { flag: 'wx', mode: 0o600 })
     await rename(temporary, patch)
   } finally { await rm(temporary, { force: true }) }
-  return { managed: true, host: HOST, port, patch }
+  return { managed: true, host: HOST, port, patch, ...(movedFrom === undefined ? {} : { movedFrom }) }
 }
 
 /** Probe/launch is a narrow race; report its actual bind error without scanning. */

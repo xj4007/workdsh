@@ -278,8 +278,6 @@ Desktop installers include Node.js, pnpm and Python runtimes by default, so user
 
 The base Desktop package does not preinstall enterprise plugins. Install them separately to enable enterprise login. For existing downloads, available features are described in their corresponding release notes.
 
-The **Tools → Terminal command dsh (optional)** menu lets you inspect, install, repair or remove the terminal command. Desktop chat does not require it; its dialog appears only when you select the menu. Installation creates a command entry using the packaged Node, pnpm and official CLI. Removing it does not delete the app or workspace. Commands display the active Desktop space; use `--workdsh-space=personal` or `--workdsh-space=enterprise` to select it explicitly. Initialize the space in Desktop first and keep Desktop signed in for enterprise operations. Plugin changes apply to that space’s Profile.
-
 ### Build plugins with enterprise authentication
 
 Host plugins inject `workdshEnterprise` and call `request({ plugin: "reports", operation: "list", method: "POST", body: { page: 1 } })`. Desktop attaches the current member authentication without exposing tokens. The backend must authorize every business operation. See the [integration guide](docs/ENTERPRISE-PLUGIN-AUTH.md) for code, type-package setup and the required new Desktop/plugin versions.
@@ -295,7 +293,7 @@ corepack yarn dev
 
 Run checks with `corepack yarn check`. On macOS or Windows, `corepack yarn release:pack` builds the Web Profile and Desktop package from the current commit. Once the Web package is published, use `corepack yarn release:pack:published` for the final installer. Both commands share the same [packaging script](scripts/package-desktop-release.mjs). [Contributing](CONTRIBUTING.en.md)
 
-The official DSH core uses published npm packages. Desktop Node, pnpm, Python, Office resources and command helpers are extracted from official installers. `upstream.json` locks their version, URLs, sizes and SHA-512 digests; no official source checkout is required. Initial packaging downloads the platform release. Windows build machines require 7-Zip to extract the installer.
+The official DSH core uses published npm packages. Desktop Node, pnpm, Python, Office resources are extracted from official installers. `upstream.json` locks their version, URLs, sizes and SHA-512 digests; no official source checkout is required. Initial packaging downloads the platform release. Windows build machines require 7-Zip to extract the installer.
 
 The source layout separates application entry points from shared packages:
 

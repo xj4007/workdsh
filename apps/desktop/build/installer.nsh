@@ -31,8 +31,11 @@ Var pid
     ${endIf}
 
   dsh_installer_scoped_fallback:
-    ; The patched builder macros match WorkDSH.exe, not every executable
-    ; below $INSTDIR. They handle pre-handoff releases and stubborn processes.
+    ; The patched builder macros match ${APP_EXECUTABLE_FILENAME} only, not
+    ; every executable below $INSTDIR. They handle pre-handoff releases and
+    ; stubborn processes. Upgrades from the old WorkDSH.exe name run the old
+    ; uninstaller found through the registry UninstallString, and that
+    ; uninstaller stops its own WorkDSH.exe process.
     MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "$(appRunning)" /SD IDOK IDOK dsh_installer_stop_app
     Quit
 

@@ -104,15 +104,6 @@ try {
  await returnedPersonal.getByRole('button',{name:'立即启用',exact:true}).click();
  await returnedPersonal.getByText('插件安装中…',{exact:true}).waitFor({state:'hidden',timeout:180000});
  report.checks.reinstalledThroughOfficialUi=true;
-
-
- const resources=join(app,'Contents/Resources/workdsh-runtime')
- const output=execFileSync(join(resources,'runtime/cli/bin/dsh'),['--version'],{env,encoding:'utf8',timeout:30000})
- report.checks.bundledDshCommandVersion=output.trim()
- const node=join(resources,'primary-runtime/dependencies/node/bin/node')
- const inspection=JSON.parse(execFileSync(node,[join(resources,'runtime/cli/command-manager.js'),'inspect'],{env,encoding:'utf8',timeout:30000}))
- report.checks.officialCommandInspector=inspection.ok===true
- report.checks.commandDestination=inspection.state?.destination
  report.ok=Object.values(report.checks).every(Boolean)
 } catch(error) {report.ok=false;report.error=error.message}
 finally {

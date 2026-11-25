@@ -1,6 +1,6 @@
 # DSH Desktop repository rules
 
-This repository owns 三云Buddy Web and Desktop. Desktop and Web consume the same exact official DSH published package version. Desktop binary dependencies and command-management helpers are extracted from checksum-locked official release installers.
+This repository owns 三云Buddy Web and Desktop. Desktop and Web consume the same exact official DSH published package version. Desktop binary dependencies are extracted from checksum-locked official release installers.
 
 ## Git branch and release policy
 
@@ -35,7 +35,7 @@ This repository owns 三云Buddy Web and Desktop. Desktop and Web consume the sa
 
 - When upgrading DSH or changing product branding, review the [brand migration record and upgrade checklist](docs/BRANDING-MIGRATION.md).
 - The user explicitly requires the latest published DSH release, currently `0.2.1-rc.5` (2026-10-30). Every actual DSH Host, Client and SDK npm package must use this same exact version. Web preview and Desktop preserve the complete native Conversation, using public Workspace/Layout APIs and only the narrowly authorized shared outer-frame patch below, without embedded custom conversation controls. Matching artifact hashes do not prove Desktop packaged-runtime acceptance; do not release Desktop until its runtime and UI checks pass.
-- `upstream.json` separately locks each official binary archive's own version, URL, size and SHA-512. The explicitly locked macOS Intel archive remains the official `0.2.1-rc.4` archive solely for Node, pnpm, Python, Office assets and prebuilt command helpers, because no Intel `rc.5` archive is published. It must not supply DSH Host, Client or SDK packages. Preserve its original `runtime.json` and record the source accurately; do not relabel it as `rc.5` or implement an automatic fallback. Intel publication requires checks against its actual packaged x64 Resources, in addition to the common npm version gate.
+- `upstream.json` separately locks each official binary archive's own version, URL, size and SHA-512. The explicitly locked macOS Intel archive remains the official `0.2.1-rc.4` archive solely for Node, pnpm, Python and Office assets, because no Intel `rc.5` archive is published. It must not supply DSH Host, Client or SDK packages. Preserve its original `runtime.json` and record the source accurately; do not relabel it as `rc.5` or implement an automatic fallback. Intel publication requires checks against its actual packaged x64 Resources, in addition to the common npm version gate.
 
 ## Personal and enterprise product boundary
 
@@ -48,7 +48,7 @@ This repository owns 三云Buddy Web and Desktop. Desktop and Web consume the sa
 - Every dependency on the official DSH surface (profile patch layers, `registerAdapter`, client slots, the preload account bridge and the soft DOM/structure dependencies) is catalogued in `docs/personal-beta/DSH-INTEGRATION.md`. Read it before changing DSH-facing UI, model routing or profile composition, and update it in the same change; an official DSH upgrade is incomplete until that document's checklist passes.
 - Preserve user-facing README content and organize new material in the corresponding sections. Development logs, raw acceptance evidence, credentials and generated packages are not submission content.
 
-- Never clone, import or compile official DSH source as part of product builds. `upstream.json` locks published package versions and Desktop archive URLs, sizes and SHA-512 hashes. Extract only runtime dependencies, Office assets and prebuilt command helpers; do not carry a second official Electron application or DSH installation.
+- Never clone, import or compile official DSH source as part of product builds. `upstream.json` locks published package versions and Desktop archive URLs, sizes and SHA-512 hashes. Extract only runtime dependencies and Office assets; do not carry a second official Electron application or DSH installation.
 
 - Explicit user-authorized exception (Web preview 2026-10-30; Desktop packaging and release 2026-10-18): the user's latest-version and compatibility-adaptation authorization extends this same two-seam exception to official `0.2.1-rc.5`; both may apply the exact-version/checksum-locked `native-workbench-frame-patch` to restore the rightmost complete native Conversation. Only the two outer-frame seams may change; preserve original headers, views, Composer and right-sidebar owners. Fail closed on unknown bytes, verify the packaged result and keep exact rollback. Desktop release still requires actual packaged-runtime and UI acceptance; no other official file changes are authorized.
 

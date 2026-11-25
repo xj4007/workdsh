@@ -93,7 +93,7 @@ export function verifyWindowsInstaller(
     distDir,
     `SanyunBuddy-${options.version}-x64-Setup.exe`,
   )
-  const applicationPath = join(distDir, 'win-unpacked', 'WorkDSH.exe')
+  const applicationPath = join(distDir, 'win-unpacked', 'SanyunBuddy.exe')
 
   assertPortableExecutable(installerPath, 'Windows NSIS installer')
   assertPortableExecutable(applicationPath, 'unpacked Windows application')

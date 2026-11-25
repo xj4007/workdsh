@@ -2,7 +2,7 @@ import { mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync, existsSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, expect, it } from 'vitest'
-import { desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher, personalSpace } from '../src/local-runtime.ts'
+import { desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher, personalSpace, personalWorkspacePatch } from '../src/local-runtime.ts'
 
 const roots: string[] = []
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }) })
@@ -65,6 +65,7 @@ it('isolates personal account spaces and never reuses the legacy dsh-home', () =
   expect(personalSpace(root, 'acc-1', 'space-1').root).toBe(a.root)
   expect(personalSpace(root, 'acc-1', 'space-2').root).not.toBe(a.root)
   expect(personalSpace(root, 'acc-2', 'space-1').root).not.toBe(a.root)
+  expect(readFileSync(personalWorkspacePatch(a.home), 'utf8')).toBe(`- id: workspace-controller\n  config:\n    documentsDirectory: ${JSON.stringify(join(a.root, 'workspace'))}\n`)
   const actor = { id: 'A', organizationId: 'org', organizationName: 'Company', email: 'a@test', displayName: 'A', role: 'MEMBER' as const, mustChangePassword: false }
   expect(enterpriseSpace(root, 'https://company.test', actor).root).not.toBe(a.root)
   const env = enterpriseEnvironment(a.root, '/runtime/node', { PATH: '/usr/bin' })

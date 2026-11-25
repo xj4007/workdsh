@@ -286,8 +286,6 @@ Desktop 安装包默认内置 Node.js、pnpm 和 Python 运行时，普通用户
 
 Desktop 基础包不预装企业插件，安装企业插件后启用企业登录。已有下载版本的功能以对应发行说明为准。
 
-桌面菜单“工具 → 终端命令 dsh（可选）”可查看、安装、修复和移除终端命令。普通桌面聊天无需安装此命令，只有主动点击菜单才显示管理弹窗。安装只创建命令入口，使用随包的 Node、pnpm 和官方 CLI；移除命令不会删除应用或工作区。命令默认操作当前 Desktop 工作区，启动时显示空间名称；`--workdsh-space=personal` 或 `--workdsh-space=enterprise` 可明确选择。企业空间须保持 Desktop 登录，首次使用前先在 Desktop 打开对应空间。插件安装、更新和移除遵循该空间的官方 Profile。
-
 ### 开发需要企业认证的插件
 
 企业业务插件注入 `workdshEnterprise`，通过 `request({ plugin: "reports", operation: "list", method: "POST", body: { page: 1 } })` 请求公司后台。Desktop 自动携带当前成员认证，插件不读取或保存 Token；后台仍检查成员和业务权限。调用示例、SDK 类型依赖及新旧版本要求见[企业插件认证接入](docs/ENTERPRISE-PLUGIN-AUTH.md)。
@@ -301,7 +299,7 @@ corepack yarn install --immutable
 corepack yarn dev
 ```
 
-官方 DSH 核心使用已发布 npm 包；Desktop 的 Node、pnpm、Python、Office 资源和命令管理程序从官方安装包提取。`upstream.json` 锁定版本、下载地址、大小与 SHA-512 摘要，构建无需克隆官方源码。首次打包会下载对应平台的官方包；Windows 构建机需要 7-Zip，仅用于解压安装包。
+官方 DSH 核心使用已发布 npm 包；Desktop 的 Node、pnpm、Python、Office 资源从官方安装包提取。`upstream.json` 锁定版本、下载地址、大小与 SHA-512 摘要，构建无需克隆官方源码。首次打包会下载对应平台的官方包；Windows 构建机需要 7-Zip，仅用于解压安装包。
 
 运行检查：`corepack yarn check`。在 macOS 或 Windows 上，从当前提交一键打包 Web Profile 与 Desktop：`corepack yarn release:pack`；Web 包发布后，正式安装包使用 `corepack yarn release:pack:published`。两条命令使用同一个[打包脚本](scripts/package-desktop-release.mjs)。[参与贡献](CONTRIBUTING.md)
 

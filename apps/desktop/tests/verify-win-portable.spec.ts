@@ -22,7 +22,7 @@ function fixture(version = '2.0.0'): { readonly root: string; readonly portable:
   mkdirSync(dist, { recursive: true })
   const portable = join(dist, `SanyunBuddy-${version}-x64-Portable.zip`)
   const archive = new AdmZip()
-  archive.addFile('WorkDSH.exe', portableExecutable())
+  archive.addFile('SanyunBuddy.exe', portableExecutable())
   archive.addFile('resources/app.asar', Buffer.from('asar'))
   archive.writeZip(portable)
   return { root, portable }
@@ -51,7 +51,7 @@ describe('Windows portable artifact verification', () => {
     const invalid = portableExecutable()
     invalid.write('NO', 0, 'ascii')
     const archive = new AdmZip()
-    archive.addFile('WorkDSH.exe', invalid)
+    archive.addFile('SanyunBuddy.exe', invalid)
     archive.addFile('resources/app.asar', Buffer.from('asar'))
     archive.writeZip(value.portable)
 

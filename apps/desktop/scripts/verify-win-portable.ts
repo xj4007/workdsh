@@ -43,9 +43,9 @@ export function verifyWindowsPortable(
   }
   const archive = new AdmZip(portablePath)
   const entries = archive.getEntries().filter(entry => !entry.isDirectory)
-  const executable = entries.find(entry => entry.entryName.replaceAll('\\', '/') === 'WorkDSH.exe')
+  const executable = entries.find(entry => entry.entryName.replaceAll('\\', '/') === 'SanyunBuddy.exe')
   if (executable === undefined) {
-    throw new Error(`Windows portable archive is missing WorkDSH.exe: ${portablePath}`)
+    throw new Error(`Windows portable archive is missing SanyunBuddy.exe: ${portablePath}`)
   }
   if (!entries.some(entry => entry.entryName.replaceAll('\\', '/') === 'resources/app.asar')) {
     throw new Error(`Windows portable archive is missing resources/app.asar: ${portablePath}`)
@@ -53,7 +53,7 @@ export function verifyWindowsPortable(
   assertPortableExecutableBuffer(
     executable.getData(),
     'Windows portable application',
-    `${portablePath}:WorkDSH.exe`,
+    `${portablePath}:SanyunBuddy.exe`,
   )
   return portablePath
 }

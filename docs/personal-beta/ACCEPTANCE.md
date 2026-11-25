@@ -62,12 +62,33 @@ What IS accepted at the levels reachable without those:
 | 企业 A 不能访问企业 B 或个人数据 | PASS (test level) | `connection-mode.spec.ts` enterprise partitions differ by principal+org; `AccountFlowTest.crossOrgSpacesAreDeniedAndBackfillIsIdempotent` (:218); session-access autoBindFixedMemberSessions with personal autoBind false; enterprise launch injects models:[] (no managed models in enterprise) |
 | 旧企业客户端仍能登录、用原网关、看原授权数据 | PASS (server live) + NOT ACCEPTED (full legacy desktop E2E) | Live: legacy `POST /api/auth/login` owner → token (unchanged shape); `POST /api/admin/members` → member + temporaryPassword (legacy shape); member legacy login with server-issued temp password → token ok; platform account auto-linked with PERSONAL+ENTERPRISE spaces (F4 live-confirmed, query=memberA shows 2 spaces). Tests: `enterpriseMemberKeepsOldLoginAndCanSwitchSpaces` (:150), `existingPersonalAccountCanBeLinkedToAnEnterpriseMember` (:383), migration preserves member identity (`backfillLinksPreexistingMembersAndSecondRunChangesNothing` :264 + "old enterprise login still works" :286). Full legacy-desktop-client E2E: NOT ACCEPTED — needs the real legacy client run |
 
+## 5.1 与官方 DeepSeek Harness 同机共存 — PASS (本机真实自建安装包实测)；签名发布包与 GUI 交互安装仍 NOT ACCEPTED
+
+场景：一台电脑原本已安装官方 DeepSeek Harness（独立安装目录、自身 `~/.dsh` 与 `%APPDATA%\@deepseek-ai\dsh-desktop`），再安装三云Buddy。要求两个产品互不读取、互不覆盖、可同时运行。
+
+实测环境（2026-11-25）：本机 Windows Server 2022（Administrator），官方 DeepSeek Harness `0.2.2-rc.3` 常驻运行中（安装目录 `D:\Program\deepseekherness`、`DSH_HOME=C:\Users\Administrator\.dsh`、Web 端口 8475）。三云Buddy 用 `electron-builder`（26.15.7）现场构建出真实 NSIS 安装包 `SanyunBuddy-3.0.0-alpha.4-x64-Setup.exe`（462.7 MB，**未签名**，`signExecutable=false`），先对官方 `~/.dsh`、`%APPDATA%\@deepseek-ai`、官方安装目录三棵树做全量 SHA-256 快照（32378 文件）作基线，再静默装到临时目录 `D:\sanyun-verify\app`（`/S /D=...`），运行双实例，然后用 `Uninstall WorkDSH.exe /S` 卸载并复比（当次构建的可执行名仍是 `WorkDSH.exe`；同日稍后 `win.executableName` 已改为 `SanyunBuddy`，见下段复验）。验收证据里的“changed 文件”均经哈希 + 路径归属判定。
+
+改名后复验（同日，2026-11-25 晚）：重建新名安装包（485.2 MB，仍未签名），并把上一段那个旧名包另存后实测升级路径——旧名包静默装到 `D:\sanyun-verify\app-legacy` 并启动（4 个 `WorkDSH.exe` 进程），再用新名包对**同一目录**静默覆盖：`UPGRADE_EXIT=0`，旧 `WorkDSH.exe` 进程被旧卸载器自动停止，目录内只剩 `SanyunBuddy.exe` 与 `Uninstall SanyunBuddy.exe`，注册表 `d1a84743-…` 条目的 `UninstallString` 更新为新卸载器，开始菜单/桌面快捷方式目标更新为 `SanyunBuddy.exe`。启动后进程全部为 `SanyunBuddy.exe`×4；官方 `DeepSeek Harness.exe` 进程数 9 不变、8475 照常监听（3080 无监听——官方 DSH Host 子进程是捆绑 `node.exe`，且只在登录后启动，与改名无关）。用 `Uninstall SanyunBuddy.exe /S` 卸载：目录与自身注册表条目删除，官方卸载条目、HKCU PATH 首条、`Software\DeepSeekHarness\Command`、`dsh://` 协议全部保持官方基线值。新包 `app.asar` 已含 `\lib\account-preload.cjs`（修复登录成功后开工作区窗口引用缺失 preload 的打包遗漏）。
+
+| Requirement | Result | Evidence |
+| --- | --- | --- |
+| 官方 `~/.dsh`（会话、凭据、插件、profile）安装前后逐项不变 | **PASS (local real installer)** | 三棵树前后哈希：ADDED 0 / REMOVED 0。仅 3 个文件 HASH-CHANGED，全部是官方 DSH 自身对**当前正在运行的会话** `session-e14f5a77-…` 的自写（`sessions/…/session.v4.jsonl.zstd` 随对话增长、`rewind-snapshots`、`storages/session_projcache`），与安装器无关；官方安装目录树本身 0 改动。三云Buddy 强制 `DSH_HOME`/`DSH_AGENTS_HOME` 指向自己的账号空间（workdsh-main.ts `runtimeEnvironment`），不解析官方 home |
+| 官方 `%APPDATA%\@deepseek-ai\dsh-desktop`（设置、更新状态）不变 | **PASS (local real installer)** | 同一树哈希比对中官方 userData 目录 ADDED/REMOVED/HASH-CHANGED 均为 0。三云Buddy 的 Electron userData 固定为 `%APPDATA%\WorkDSH`，appId `io.techflag.dsh.ssh`，与官方 `com.deepseek.dsh` 不同 |
+| 全局注册面（HKCU PATH / `Software\DeepSeekHarness\Command` / `dsh://` 协议）不被改写 | **PASS (local real installer)** | 装后 `HKCU\Environment\Path` 首条仍是官方 `…\runtime\cli\bin`；`Software\DeepSeekHarness\Command` 三值仍是官方；`HKCU\Software\Classes\dsh` 仍指向官方 `DeepSeek Harness.exe`；`D:\sanyun-verify\app\resources\workdsh-runtime\runtime\cli` 不存在（删命令功能生效，安装包不再携带或注册任何 `dsh` 终端命令） |
+| 两个应用可同时启动、各自窗口与会话正常 | **PASS (local real installer)** | 三云Buddy 窗口起（主窗口标题「三云Buddy」，4 个 WorkDSH.exe 进程），同时官方 DSH 进程与 8475 端口照常监听，两互不干扰。三云Buddy 监听 loopback 端口，被占时改空闲端口、不停止其他进程 |
+| 安装 / 卸载三云Buddy 后官方应用仍能正常启动 | **PASS (local real installer)** | 静默卸载 `UNINSTALL_EXIT=0` 后：官方 `DeepSeek Harness.exe` 与 `resources\runtime\cli\bin\dsh.cmd` 仍在；官方进程与 8475 端口未受影响继续运行；卸载项注册表里官方 `1bf39983-…` GUID 条目完好，仅移除了三云Buddy 自己的 `d1a84743-…` 条目 |
+| 卸载/升级不删除官方数据 | **PASS (local real installer)** | 卸载后三棵树前后哈希：ADDED 0 / REMOVED 0，仅上述同样 3 个官方会话自写文件变化；`snap-pre-extra.txt` 与 `snap-post-uninstall-extra.txt` 逐行 `FC` 无差异（PATH、Command 键、协议、卸载项列表、快捷方式全部回到基线）。三云Buddy 自身 userData `%APPDATA%\WorkDSH` 卸载后仍保留（未设 `deleteAppDataOnUninstall`），但那是三云Buddy 自己的数据，与官方无关 |
+| 用**签名发布版**安装包 + GUI 交互安装向导实测同机共存 | **NOT ACCEPTED** | 本次为现场构建的未签名安装包、静默安装到临时目录；正式发行签名包、真实用户路径（默认 Program Files 或用户自选目录）与 GUI 向导安装/卸载仍未跑 |
+| exe 改名（`WorkDSH.exe`→`SanyunBuddy.exe`）后从旧名包升级与卸载回归 | **PASS (local real installer)** | 旧名包运行中用新名包静默覆盖同目录成功：旧进程被旧卸载器停止、旧 exe 文件清除、注册表 `UninstallString` 与快捷方式更新为 `Uninstall SanyunBuddy.exe`/`SanyunBuddy.exe`；卸载后 PATH、`Software\DeepSeekHarness\Command`、`dsh://`、官方卸载条目全部回到基线，官方进程不受影响。`%APPDATA%\WorkDSH`（userData）与 appId/GUID 故意不改名以保旧数据与升级识别 |
+
+
 ## 6. Explicit NOT ACCEPTED list (what is missing)
 
 | Item | Status | Missing evidence |
 | --- | --- | --- |
 | Real vendor model conversation (streaming + native tool + three-way billing consistency) | **NOT ACCEPTED** | Real OpenAI-compatible vendor endpoint + key + authorization to spend tokens; a real packaged installer connected to a running server. What exists: gateway tests with a usage-returning mock upstream (§3), GATE real-Host probe with a mock model server |
 | Real packaged-installer desktop E2E (register in real UI, footer trial balance, two real accounts, self-config model conversation) | **NOT ACCEPTED** | A real packaged installer run against a running server. What exists: 51 desktop tests (integration, mocked), real-Host GATE probe, live server API smoke |
+| Coexistence with an installed official DeepSeek Harness (§5.1) | **PASS (local unsigned real installer)** — signed release package + GUI wizard install still NOT ACCEPTED | Verified on this machine: before/after tree hashes of `~/.dsh` and `%APPDATA%\@deepseek-ai\dsh-desktop` unchanged (only official DSH's own live-session self-writes moved), PATH / `Software\DeepSeekHarness\Command` / `dsh://` untouched, simultaneous launch OK, silent uninstall left `snap-pre-extra` identical via `FC`. Missing: the signed published artifact and an interactive GUI install/uninstall on a standard user path |
 | MySQL DDL execution | **NOT ACCEPTED** | No local MySQL instance (MysqlEnterpriseTest env-gated/skipped). DDL is +128/-0 pure-additive and syntax-consistent across the four dialects; needs one real MySQL run |
 | Production migration / open registration / official installer release | **NOT ACCEPTED — owner decisions** | Plan Section 5 explicitly reserves these for separate confirmation (§7); this plan did not touch production |
 

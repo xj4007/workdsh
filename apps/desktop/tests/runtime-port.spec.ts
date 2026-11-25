@@ -36,15 +36,18 @@ it('coexists with an existing Host, persists a new origin and reuses it on reope
   expect(await prepareRuntimePort(directory, [], { preferredPort: existing })).toEqual(first)
 })
 
-it('uses an available preferred port, but refuses to move a saved origin occupied by another process', async () => {
+it('uses an available preferred port, but moves a saved origin occupied by another process instead of blocking startup', async () => {
   const directory = await home(), probe = await occupied()
   await new Promise<void>((resolve, reject) => servers[0]!.close(error => error ? reject(error) : resolve()))
   const selected = await prepareRuntimePort(directory, [], { preferredPort: probe })
   expect(selected.managed && selected.port).toBe(probe)
-  const state = await readFile(join(directory, '.workdsh-loopback.json'), 'utf8')
   await occupied(probe)
-  await expect(prepareRuntimePort(directory, [], { preferredPort: 0 })).rejects.toThrow('未切换地址')
-  expect(await readFile(join(directory, '.workdsh-loopback.json'), 'utf8')).toBe(state)
+  const moved = await prepareRuntimePort(directory, [], { preferredPort: 0 })
+  if (!moved.managed) throw new Error('Expected managed port')
+  expect(moved.port).not.toBe(probe)
+  expect(moved.movedFrom).toBe(probe)
+  expect(JSON.parse(await readFile(join(directory, '.workdsh-loopback.json'), 'utf8')).port).toBe(moved.port)
+  expect(load(await readFile(moved.patch, 'utf8'))).toEqual([{ id: 'webserver', config: { host: '127.0.0.1', port: moved.port } }])
   expect(await (await fetch(`http://127.0.0.1:${probe}`)).text()).toBe('unrelated-host-retained')
 })
 
@@ -85,14 +88,17 @@ it('explains an actual EADDRINUSE launch race without treating unrelated failure
 })
 
 
-it('keeps a legacy Home on its original port and refuses a busy origin before creating a new record', async () => {
+it('keeps a legacy Home on its original port and falls back when that origin is busy', async () => {
   const directory = await home(), originalPort = await occupied()
   // The caller captured existingHome before prepareProfile created any files.
-  await expect(prepareRuntimePort(directory, [], { preferredPort: originalPort, existingHome: true })).rejects.toThrow('未切换地址')
-  await expect(readFile(join(directory, '.workdsh-loopback.json'))).rejects.toHaveProperty('code', 'ENOENT')
+  const moved = await prepareRuntimePort(directory, [], { preferredPort: originalPort, existingHome: true })
+  if (!moved.managed) throw new Error('Expected managed port')
+  expect(moved.port).not.toBe(originalPort)
+  expect(moved.movedFrom).toBe(originalPort)
+  expect(JSON.parse(await readFile(join(directory, '.workdsh-loopback.json'), 'utf8')).port).toBe(moved.port)
   expect(await (await fetch(`http://127.0.0.1:${originalPort}`)).text()).toBe('unrelated-host-retained')
   await new Promise<void>((resolve, reject) => servers[0]!.close(error => error ? reject(error) : resolve()))
-  const migrated = await prepareRuntimePort(directory, [], { preferredPort: originalPort, existingHome: true })
-  expect(migrated.managed && migrated.port).toBe(originalPort)
-  expect(JSON.parse(await readFile(join(directory, '.workdsh-loopback.json'), 'utf8')).port).toBe(originalPort)
+  const kept = await prepareRuntimePort(await home(), [], { preferredPort: originalPort, existingHome: true })
+  expect(kept.managed && kept.port).toBe(originalPort)
+  expect(kept.managed && kept.movedFrom).toBeUndefined()
 })

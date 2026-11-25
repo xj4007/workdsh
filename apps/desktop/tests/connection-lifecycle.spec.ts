@@ -185,7 +185,9 @@ it('starts a personal account workspace, wires the managed bridge in Main, switc
     state.models = [catalogModel]
     expect(await state.handlers['workdsh:account-login']!({ sender: entry.webContents }, { email: ' a@test ', password: 'p'.repeat(12) })).toEqual({})
     expect(state.logins).toEqual([{ email: 'a@test', password: 'p'.repeat(12) }])
-    expect(state.clients).toEqual(['https://sanyun.test'])
+    // Startup reads the registration config with its own client; the login then opens another.
+    expect(new Set(state.clients)).toEqual(new Set(['https://sanyun.test']))
+    expect(state.clients).toHaveLength(2)
     expect(state.modelCalls).toBe(1)
     const bridge = state.bridges[0]
     expect(bridge.origin).toBe('https://sanyun.test')
@@ -209,9 +211,6 @@ it('starts a personal account workspace, wires the managed bridge in Main, switc
     expect(JSON.stringify(launch[2]?.env)).not.toContain(token)
     expect(launch[1]).toEqual([join(personalHome, '.workdsh-host.mjs'), '--no-open'])
     expect(launch[2]?.cwd).toBe(join(personalHome, '..', 'workspace'))
-    const commandContext = JSON.parse(readFileSync(join(state.userData, 'command-context.json'), 'utf8'))
-    expect(commandContext.active).toMatchObject({ mode: 'personal', home: personalHome, label: 'A / 个人空间' })
-    expect(commandContext.personalHome).toBe(join(root, 'legacy-home'))
     ready(children[0])
     await vi.waitFor(() => expect(state.windows).toHaveLength(2))
     const workspace = state.windows[1]
@@ -220,7 +219,7 @@ it('starts a personal account workspace, wires the managed bridge in Main, switc
     expect(workspace.url).toContain(`workdshAccountKey=${'k'.repeat(64)}`)
     expect(workspace.url).not.toContain(token)
     expect(workspace.options.webPreferences.partition).toMatch(/^workdsh-account-[0-9a-f]{64}$/)
-    expect(workspace.options.webPreferences.preload).toBeUndefined()
+    expect(workspace.options.webPreferences.preload).toContain('account-preload.cjs')
     expect(workspace.options.webPreferences.sandbox).toBe(true)
     expect(await state.handlers['workdsh:account-login']!({ sender: workspace.webContents }, { email: 'a@test', password: 'p'.repeat(12) })).toEqual({ error: '此页面不能发起账户操作' })
     state.switchResult = enterpriseOnly
@@ -267,7 +266,6 @@ it('starts a personal account workspace, wires the managed bridge in Main, switc
     expect(decodeURIComponent(entryAgain.url)).toContain('登录 三云Buddy')
     expect(existsSync(join(root, 'legacy-home', 'profiles'))).toBe(false)
     expect(readFileSync(join(root, 'legacy-home', 'retained'), 'utf8')).toBe('personal data')
-    expect(JSON.parse(readFileSync(join(state.userData, 'command-context.json'), 'utf8')).personalHome).toBe(join(root, 'legacy-home'))
   } finally {
     try {
       state.menu.find(item => item.label === '账户')?.submenu[0].click()
