@@ -23,6 +23,7 @@ import { createRuntimeOutputRedactor, redactRuntimeOutput, runtimeFailureDetail,
 import { cleanOwnedProcessTree, stopOwnedProcess, trackOwnedProcess } from './owned-process.ts'
 import { prepareRuntimePort, runtimePortConflict } from './runtime-port.ts'
 import { runOfficialCommand } from './official-command.ts'
+import { isNewerVersion, parseUpdateManifest, UPDATE_FEED_URL } from './update-check.ts'
 
 const PROFILE_NAME = 'workdsh'
 const READY_PATTERN = /dsh web:\s+(http:\/\/127\.0\.0\.1:\d+\/?\?token=[^\s]+)/u
@@ -610,10 +611,54 @@ function installAccountHandlers(): void {
   })
 }
 
+/** Prompts for a newer release and hands the installer download to the default browser. */
+async function checkForUpdates(manual: boolean): Promise<void> {
+  try {
+    const response = await fetch(UPDATE_FEED_URL, { redirect: 'error', cache: 'no-store', signal: AbortSignal.timeout(5_000) })
+    if (!response.ok) throw new Error(`更新服务器返回 ${response.status}`)
+    const info = parseUpdateManifest(await response.json())
+    const installed = app.getVersion()
+    if (!isNewerVersion(info.version, installed)) {
+      if (manual) await dialog.showMessageBox({ type: 'info', title: '检查更新', message: '已是最新版本', detail: `当前版本 ${installed}` })
+      return
+    }
+    const notificationFile = join(app.getPath('userData'), 'update-notification.json')
+    let promptedVersion: string | undefined
+    try {
+      const record = JSON.parse(readFileSync(notificationFile, 'utf8')) as { promptedVersion?: unknown }
+      if (typeof record.promptedVersion === 'string') promptedVersion = record.promptedVersion
+    } catch { /* a missing or unreadable record never blocks the prompt */ }
+    // A launch check must not repeat the same notice on every start.
+    if (!manual && promptedVersion === info.version) return
+    const { response: choice } = await dialog.showMessageBox({
+      type: 'info',
+      title: '发现新版本',
+      message: `发现新版本 ${info.version}`,
+      detail: `${info.notes === undefined || info.notes.length === 0 ? '' : `${info.notes}\n\n`}下载后运行安装包覆盖安装即可，现有账户、设置和工作区数据都会保留。`,
+      buttons: ['下载更新', '不再提示'],
+      defaultId: 0,
+      cancelId: 1,
+    })
+    try {
+      mkdirSync(app.getPath('userData'), { recursive: true })
+      writeFileSync(notificationFile, JSON.stringify({ promptedVersion: info.version }), { mode: 0o600 })
+    } catch { /* an unwritable record only means the notice may repeat */ }
+    if (choice === 0) void shell.openExternal(info.url)
+  } catch {
+    if (manual) dialog.showErrorBox('检查更新失败', '无法连接更新服务器，请稍后再试。')
+  }
+}
+
 function installConnectionMenu(): void {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
     { label: '账户', submenu: [{ label: '切换账户／空间', click: () => { void returnToEntry() } }] },
+    {
+      label: '工具',
+      submenu: [
+        { label: '检查更新…', click: () => { void checkForUpdates(true) } },
+      ],
+    },
     { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
   ]))
 }
@@ -688,6 +733,8 @@ if (!app.requestSingleInstanceLock()) {
     installAccountHandlers()
     registrationEnabled = await readRegistrationEnabled()
     showConnectionEntry()
+    // Launch checks stay off in development so an unpackaged run never nags; the menu item still works.
+    if (app.isPackaged) setTimeout(() => { if (!switching && !installer && !quitRequested) void checkForUpdates(false) }, 5_000)
   }).catch(cause => {
     process.stderr.write(`三云Buddy failed to start: ${cause instanceof Error ? cause.stack ?? cause.message : String(cause)}\n`)
     app.quit()

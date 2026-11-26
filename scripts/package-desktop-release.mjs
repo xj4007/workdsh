@@ -5,6 +5,7 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { DSH_VERSION } from '../apps/desktop/scripts/runtime-version.mjs'
+import { writeUpdateManifest } from '../apps/desktop/scripts/write-update-manifest.mjs'
 import { RELEASE_PACKAGES } from '../apps/desktop/scripts/workdsh-package-boundary.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -39,6 +40,14 @@ const { verifyProfileRelease, verifyReleaseArchives } = await import('../apps/de
 run('Check Desktop packaging', corepack, ['yarn', 'workspace', 'dsh-plugin-desktop', platform === 'win32' ? 'check:win-package' : 'check:mac-package'])
 
 const version = JSON.parse(readFileSync(join(webRoot, 'package.json'), 'utf8')).version
+// Release gate: one product version across Web, Desktop and the workspace root.
+const desktopVersion = JSON.parse(readFileSync(join(root, 'apps/desktop', 'package.json'), 'utf8')).version
+const workspaceVersion = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version
+if (desktopVersion !== version || workspaceVersion !== version) {
+  throw new Error(
+    `Product versions must match before packaging: apps/web=${version}, apps/desktop=${desktopVersion}, root=${workspaceVersion}`,
+  )
+}
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()
 const releaseDirectory = join(root, 'apps/desktop', 'build', `workdsh-profile-release-${source}-${commit.slice(0, 12)}-${Date.now()}`)
 if (source === 'local') {
@@ -93,5 +102,11 @@ run('Prepare bundled Python and Node.js', corepack, ['yarn', 'workspace', 'dsh-p
 run('Build the Desktop installer', process.execPath, [join(root, 'apps/desktop', 'scripts', platform === 'win32' ? 'package-win.ts' : 'package-mac.ts')], {
   env: { ...runtimeEnv, DSH_PACKAGE_CHECK_ALREADY_RAN: '1' },
 })
+if (platform === 'win32') {
+  console.log('\n==> Write the static update manifest')
+  await writeUpdateManifest()
+} else {
+  console.log('\nmacOS packaging produces only the .app directory (build.mac.target=dir), so no installer artifact or latest.json is generated.')
+}
 
 console.log(`\nDesktop package completed using ${source === 'local' ? 'this commit\'s Web Profile' : 'the published Web Profile'}.`)
