@@ -6,7 +6,7 @@
 
 从 [GitHub Releases](https://github.com/techflag/workdsh/releases) 下载含实际安装文件的版本。Windows 使用 x64 Setup 或 Portable；macOS 根据电脑选择 Apple Silicon（arm64）或 Intel（x64）DMG。安装包自带 Electron、Node 和固定版本的 DSH Profile，普通用户无需安装 Node.js 或 Python。
 
-启动后选择个人或企业使用方式。两种方式均在本机运行 Profile 中的官方 DSH 服务，并在应用窗口打开本机页面。默认功能为资料库、专家、技能和 MCP/连接器；企业账号插件随包供应，仅企业登录后启用。项目、三云Buddy Office、活动、协作和通知须显式安装外部插件。企业登录与公司包配置见[Desktop 使用说明](DESKTOP-PERSONAL-ENTERPRISE.md)。窗口关闭会结束 Windows 应用；macOS 遵循系统窗口生命周期。当前外壳不提供旧文档描述的托盘、多 Profile 选择或自动更新面板。
+启动后选择个人或企业使用方式。两种方式均在本机运行 Profile 中的官方 DSH 服务，并在应用窗口打开本机页面。默认功能为资料库、专家、技能和 MCP/连接器；企业账号插件随包供应，仅企业登录后启用。项目、三云Buddy Office、活动、协作和通知须显式安装外部插件。企业登录与公司包配置见[Desktop 使用说明](DESKTOP-PERSONAL-ENTERPRISE.md)。窗口关闭会结束 Windows 应用；macOS 遵循系统窗口生命周期。当前外壳不提供旧文档描述的托盘或多 Profile 选择；更新方面只提供新版本提示与手动检查，不提供自动下载和安装。
 
 ## 数据与插件
 
@@ -16,6 +16,6 @@
 
 ## 更新与排查
 
-当前 Desktop 没有自动更新管理器。需要升级时，到 [Releases](https://github.com/techflag/workdsh/releases) 获取目标平台的新安装包。升级前备份重要工作目录及应用数据。
+Desktop 启动时会向更新服务器检查新版本（需联网；检查失败不影响使用），同一版本不会每次启动都重复提示。发现新版本会弹窗提示，点「下载更新」会在默认浏览器打开安装包下载链接；下载后运行安装包覆盖安装即可，账户、设置和工作区数据都会保留。也可从菜单「工具 → 检查更新…」手动检查，或到 [Releases](https://github.com/techflag/workdsh/releases) 直接下载目标平台的安装包。当前不提供静默自动下载和自动安装。
 
 如果窗口没有出现，先确认安装包与操作系统架构匹配，再重新启动并记录错误。报告问题时请附操作系统、三云Buddy 版本、复现步骤及错误信息；提交到 [GitHub Issues](https://github.com/techflag/workdsh/issues)。开发与打包边界见[架构说明](architecture.md)。

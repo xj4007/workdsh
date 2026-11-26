@@ -24,4 +24,4 @@ DSH home 位于本机应用数据目录。资料库、专家、技能和 MCP/连
 
 ## 如何更新？
 
-当前版本不提供自动更新管理器。到 [Releases](https://github.com/techflag/workdsh/releases) 手动下载新安装包；升级前备份重要数据。问题可在 [GitHub Issues](https://github.com/techflag/workdsh/issues) 报告。
+Desktop 启动时会向更新服务器检查新版本（需联网；检查失败不影响使用），发现新版本会弹窗提示，点「下载更新」会在默认浏览器打开安装包下载链接，运行下载的安装包覆盖安装即可，个人配置和工作区数据保留；也可从菜单「工具 → 检查更新…」手动检查，或到 [Releases](https://github.com/techflag/workdsh/releases) 直接下载新安装包。不提供静默自动下载和自动安装。问题可在 [GitHub Issues](https://github.com/techflag/workdsh/issues) 报告。

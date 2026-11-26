@@ -24,4 +24,4 @@ DSH home is under local application data. Library, experts, skills and MCP/conne
 
 ## How do I update?
 
-The current carrier has no automatic update manager. Download a newer installer manually from [Releases](https://github.com/techflag/workdsh/releases), backing up important data first. Report problems through [GitHub Issues](https://github.com/techflag/workdsh/issues).
+Desktop checks the update server for a newer version at launch (this needs network access; a failed check never blocks normal use). When a newer version exists, a dialog offers Download update, which opens the installer download link in your default browser; run the downloaded installer to upgrade in place, and your personal settings and workspace data are kept. You can also check manually from the Tools → Check for updates… menu, or download a newer installer directly from [Releases](https://github.com/techflag/workdsh/releases). Desktop does not download or install updates silently. Report problems through [GitHub Issues](https://github.com/techflag/workdsh/issues).
