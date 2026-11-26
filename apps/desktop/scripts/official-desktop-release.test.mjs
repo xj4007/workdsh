@@ -35,7 +35,7 @@ test('cache reuse rejects the previous copy format and missing executable target
     write(join(runtime, 'runtime.json'), JSON.stringify({ desktopVersion: lock.desktopArtifacts[target].version, platform: 'darwin', arch: 'arm64', ...lock.primaryRuntime,payloadDigest:'a'.repeat(64) }))
     const executable = join(runtime, 'dependencies/python/bin/python3')
     const executableTarget = process.platform === 'win32' ? executable : join(runtime, 'dependencies/python/bin/python3.12')
-    for (const path of [executableTarget, join(runtime, 'dependencies/node/bin/node'), join(runtime, 'dependencies/pnpm/bin/pnpm.cjs'), join(directory, 'runtime/cli/command-manager.js')]) write(path)
+    for (const path of [executableTarget, join(runtime, 'dependencies/node/bin/node'), join(runtime, 'dependencies/pnpm/bin/pnpm.cjs')]) write(path)
     if (process.platform !== 'win32') symlinkSync('python3.12', executable)
     mkdirSync(join(directory, 'runtime/office-skills'))
     const identity = { npmDshVersion: lock.version, target, artifact: officialDesktopArtifact(target) }

@@ -2,7 +2,7 @@
 
 [English](architecture.en.md)
 
-三云Buddy Desktop 是一个 Electron 外壳，运行一套固定版本的 DeepSeek Harness Profile。`apps/desktop/src/workdsh-main.ts` 是安装包唯一的应用入口；官方 DSH 使用锁定版本的已发布包；解释器、Office 资源和命令管理程序从校验过的官方 Desktop 发布包提取，构建无需官方源码。安装包中的 `workdsh-runtime/profiles/workdsh` 提供 DSH Host、Web UI 和 三云Buddy 功能包。
+三云Buddy Desktop 是一个 Electron 外壳，运行一套固定版本的 DeepSeek Harness Profile。`apps/desktop/src/workdsh-main.ts` 是安装包唯一的应用入口；官方 DSH 使用锁定版本的已发布包；解释器和 Office 资源从校验过的官方 Desktop 发布包提取，构建无需官方源码。安装包中的 `workdsh-runtime/profiles/workdsh` 提供 DSH Host、Web UI 和 三云Buddy 功能包。
 
 ```mermaid
 flowchart LR

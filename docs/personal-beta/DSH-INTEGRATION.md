@@ -21,6 +21,8 @@
 | `apps/desktop/src/local-runtime.ts` → `officialHostLauncher()` | 生成 `.workdsh-host.mjs`，import 官方 `profile-boot.js` / app-boot，传入 `patchFiles` |
 | `apps/desktop/src/workdsh-main.ts` → `startRuntime()` | `layers = basePatch + patches + port.patch`，再交给 launcher |
 | `apps/desktop/src/local-runtime.ts` → `materializeRuntimeProfile()` | 从打包 runtime 物化 `profiles/workdsh`，写 `.workdsh-desktop-base.json` |
+| `apps/desktop/src/local-runtime.ts` → `personalWorkspacePatch()` | 个人空间写 `.workdsh-workspace.patch.yml`，把 `workspace-controller.config.documentsDirectory` 指到空间内 `workspace`；默认工作区不再与官方 Desktop 共用 `Documents/deepseek-harness`。只影响首次初始化的空间 |
+| `apps/desktop/src/runtime-port.ts` → `prepareRuntimePort()` | 用官方 `webserver` 行固定 loopback 地址；原地址被占时改用空闲端口并提示，不停止其他进程。用户自己写了 `webserver` 行则不接管 |
 | `packages/bundle/cordis.patch.yml` | 我们 bundle 自带的 patch（插入 workdsh 插件行） |
 | `apps/desktop/scripts/{pack,prepare}-workdsh-*.mjs` | 打包/安装 profile，校验官方版本、bundle 清单、插件库存 |
 
@@ -93,7 +95,7 @@
 2. `corepack yarn check:desktop-dsh-alignment && corepack yarn check:web-dsh-alignment`。
 3. grep 第 3 节表格里的插槽名（新的 `lib/types/**/slots.d.ts`）与 `registerAdapter` 签名。
 4. 重建前端产物：`apps/web` 下 `node node_modules/pnpm/bin/pnpm.cjs --filter workdsh-bundle build`（内部会先 build `workdsh-ui` 和 `workdsh-plugin-workbench`）。
-5. 重新打包并安装 runtime：`node apps/desktop/scripts/pack-workdsh-profile.mjs apps/web apps/desktop/build/workdsh-profile-release`（同名目录存在会拒绝，先挪走旧目录）→ `prepare:workdsh-runtime` → `prepare:workdsh-primary-runtime` → `prepare:workdsh-command` → 桌面载体 `build`。
+5. 重新打包并安装 runtime：`node apps/desktop/scripts/pack-workdsh-profile.mjs apps/web apps/desktop/build/workdsh-profile-release`（同名目录存在会拒绝，先挪走旧目录）→ `prepare:workdsh-runtime` → `prepare:workdsh-primary-runtime` → 桌面载体 `build`。
 6. 本地验收（CDP 脚本在 `tmp/`，已在 `.gitignore`）：
    - `verify-hero.mjs`：`[data-testid="workdsh-hero-welcome"]` 存在、文案正确、`body.innerText` 不含 `探索未至之境`/`预览版`
    - 底栏：自上而下只有「更多」和账号行（无「插件广场」）；账号行积分非 0、无截断；打开「更多」可见「设置」「插件广场」，点击插件广场打开 SkillHub 面板且菜单关闭

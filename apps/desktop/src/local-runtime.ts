@@ -160,6 +160,13 @@ export function personalSpace(userData: string, accountId: string, spaceId: stri
   return { root, home: join(root, 'dsh') }
 }
 
+/** Keep personal documents inside the space so the default workspace never aliases the official Desktop's. */
+export function personalWorkspacePatch(home: string): string {
+  const patch = join(home, '.workdsh-workspace.patch.yml')
+  writeFileSync(patch, `- id: workspace-controller\n  config:\n    documentsDirectory: ${JSON.stringify(join(home, '..', 'workspace'))}\n`, { mode: 0o600 })
+  return patch
+}
+
 export function enterpriseEnvironment(root: string, executable: string, parent: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const result: NodeJS.ProcessEnv = {}
   for (const key of ['SystemRoot', 'WINDIR', 'ComSpec', 'PATHEXT', 'LANG', 'LC_ALL', 'TZ', 'DISPLAY', 'WAYLAND_DISPLAY']) if (parent[key]) result[key] = parent[key]

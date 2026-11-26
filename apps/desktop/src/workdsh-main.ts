@@ -17,9 +17,8 @@ import { connectionEntryHtml, spacePickerHtml, connectionLoadingHtml } from './c
 import { connectionPartition, type DesktopConnection } from './connection-mode.ts'
 import { parseDeploymentConfig, serviceOrigin as resolveServiceOrigin } from './deployment-config.ts'
 import { EnterpriseLogin, startEnterpriseAuthority, type Authority } from './enterprise-auth.ts'
-import { acknowledgePreviewNotice, personalSpace, desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher } from './local-runtime.ts'
+import { acknowledgePreviewNotice, personalSpace, personalWorkspacePatch, desktopEnterprisePatch, enterpriseEnvironment, enterpriseSpace, materializeRuntimeProfile, markProfileUpdated, officialLauncher, officialHostLauncher } from './local-runtime.ts'
 import { startManagedBridge, type AccountSummary, type ManagedBridge } from './managed-bridge.ts'
-import { manageCommand } from './command-management.ts'
 import { createRuntimeOutputRedactor, redactRuntimeOutput, runtimeFailureDetail, runtimeFailureLog } from './runtime-diagnostics.ts'
 import { cleanOwnedProcessTree, stopOwnedProcess, trackOwnedProcess } from './owned-process.ts'
 import { prepareRuntimePort, runtimePortConflict } from './runtime-port.ts'
@@ -254,22 +253,19 @@ async function prepareProfile(home: string): Promise<{ profile: string, existing
   return { profile: result.profile, existingHome }
 }
 
-function rememberCommandSpace(home?: string): void {
-  const label = enterprise ? `${enterprise.login.actor.organizationName ?? '企业'} / ${enterprise.login.actor.displayName}` : accountSession ? `${accountSession.account.displayName} / ${accountSession.space.name}` : '个人工作区'
-  const root = enterprise?.root ?? accountSession?.root
-  const active = home ? { mode: enterprise ? 'enterprise' : 'personal', home, ...(root ? { root } : {}), label } : undefined
-  mkdirSync(app.getPath('userData'), { recursive: true })
-  writeFileSync(join(app.getPath('userData'), 'command-context.json'), JSON.stringify({ personalHome: runtimeHome(), active }), { mode: 0o600 })
-}
-
 async function startRuntime(home: string, connection: DesktopConnection, patches: string[] = [], existingHome = false): Promise<void> {
-  rememberCommandSpace(home)
   if (quitRequested) throw new Error('启动已取消')
   const executable = bundledNodeExecutable()
   if (!existsSync(executable)) throw new Error(`Bundled Node.js runtime is missing: ${executable}`)
   const basePatch = join(bundledProfileDirectory(), 'cordis.patch.yml')
   const port = await prepareRuntimePort(home, [join(home, 'profiles', PROFILE_NAME, 'cordis.yml'), join(home, 'profiles', PROFILE_NAME, 'cordis.patch.yml'), join(home, 'cordis.yml'), join(home, 'cordis.patch.yml'), ...patches], { existingHome })
   if (quitRequested) throw new Error('启动已取消')
+  if (port.managed && port.movedFrom !== undefined) void dialog.showMessageBox({
+    type: 'warning',
+    title: '工作区地址已更改',
+    message: `原地址 ${port.host}:${port.movedFrom} 正被其他程序占用，本次已改用 ${port.host}:${port.port} 启动。`,
+    detail: '会话、文件和凭据保存在工作区目录中，不受影响；保存在原地址上的界面本地偏好（如面板宽度）会重置一次。',
+  })
   const layers = [...(existsSync(basePatch) ? [basePatch] : []), ...patches, ...(port.managed ? [port.patch] : [])]
   const launcher = officialHostLauncher(bundledProfileDirectory(), home, executable, join(bundledPrimaryRuntime(), 'dependencies', 'pnpm', 'bin', 'pnpm.cjs'), layers)
   const startedAt = Date.now()
@@ -361,7 +357,6 @@ async function leaveWorkspace(): Promise<void> {
   enterprise = undefined
   accountSession = undefined
   pendingLogin = undefined
-  rememberCommandSpace()
   if (session) {
     if (session.authFile) rmSync(session.authFile, { force: true })
     const revoked = await session.login.logout()
@@ -483,7 +478,7 @@ async function launchAccount(input: { client: AccountClient, result: LoginResult
     account: accountSummary, refreshAccount, switchSpace: switchAccountSpace,
     logout: () => { void returnToEntry() },
   })
-  await startRuntime(space.home, { mode: 'personal', accountId: session.account.id, spaceId: session.space.id }, [], prepared.existingHome)
+  await startRuntime(space.home, { mode: 'personal', accountId: session.account.id, spaceId: session.space.id }, [personalWorkspacePatch(space.home)], prepared.existingHome)
 }
 
 async function launchEnterpriseSpace(session: ActiveAccount): Promise<void> {
@@ -619,7 +614,6 @@ function installConnectionMenu(): void {
   Menu.setApplicationMenu(Menu.buildFromTemplate([
     ...(process.platform === 'darwin' ? [{ role: 'appMenu' as const }] : []),
     { label: '账户', submenu: [{ label: '切换账户／空间', click: () => { void returnToEntry() } }] },
-    { label: '工具', submenu: [{ label: '终端命令 dsh（可选）…', click: () => { void manageCommand(join(process.resourcesPath, 'workdsh-runtime'), enterprise ? `${enterprise.login.actor.organizationName ?? '企业'} / ${enterprise.login.actor.displayName}` : accountSession ? `${accountSession.account.displayName} / ${accountSession.space.name}` : '个人工作区') } }] },
     { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
   ]))
 }
