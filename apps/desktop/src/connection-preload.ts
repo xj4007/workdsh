@@ -40,6 +40,9 @@ function start(): void {
     if (register) register.hidden = loginTab
     tabLogin?.setAttribute('aria-selected', String(loginTab))
     tabRegister?.setAttribute('aria-selected', String(!loginTab))
+    // The tab is the click target; move the caret to the form that is now visible.
+    const form = loginTab ? login : register
+    form?.querySelector<HTMLInputElement>('input')?.focus()
     show('')
   }
 

@@ -39,7 +39,7 @@ export function connectionEntryHtml(serviceOrigin: string, registrationEnabled =
   const origin = escapeHtml(serviceOrigin)
   return page(`<main><header><h1>登录 三云Buddy</h1><p>服务地址：<span>${origin}</span></p></header>
 <div class="tabs" role="tablist"><button type="button" id="tab-login" role="tab" aria-selected="true">登录</button>${registrationEnabled ? '<button type="button" id="tab-register" role="tab" aria-selected="false">注册</button>' : ''}</div>
-<form id="account-login"><label>邮箱<input id="login-email" type="email" autocomplete="username" required></label><label>密码<input id="login-password" type="password" autocomplete="current-password" minlength="12" required></label><button class="primary" type="submit">登录</button></form>
+<form id="account-login"><label>邮箱<input id="login-email" type="email" autocomplete="username" required autofocus></label><label>密码<input id="login-password" type="password" autocomplete="current-password" minlength="12" required></label><button class="primary" type="submit">登录</button></form>
 ${registrationEnabled ? `<form id="account-register" hidden><label>邮箱<input id="register-email" type="email" autocomplete="email" required></label><label>验证码<div class="row"><input id="register-code" inputmode="numeric" autocomplete="one-time-code" required><button class="ghost" type="button" id="request-code">获取验证码</button></div></label><label>密码<input id="register-password" type="password" autocomplete="new-password" minlength="12" required></label><label>显示名称（可选）<input id="register-name" maxlength="120"></label><button class="primary" type="submit">注册并登录</button></form>` : ''}
 <p id="status" role="status" aria-live="polite"></p></main>`, true)
 }
