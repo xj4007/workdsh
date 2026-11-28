@@ -10,6 +10,7 @@ it('renders an account-only entry with a fixed service origin and no anonymous o
   expect(html).not.toContain('workdsh://')
   expect(html).not.toContain('name="portal"')
   expect(html).toContain('id="account-login"')
+  expect(html).toContain('id="login-email" type="email" autocomplete="username" required autofocus')
   expect(html).toContain('id="account-register"')
   expect(html).toContain('id="request-code"')
   expect(html).toContain('form[hidden]{display:none}')
